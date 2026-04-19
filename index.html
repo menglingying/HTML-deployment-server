@@ -1,0 +1,3103 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>橙心国际教育积分系统</title>
+    <!-- Tailwind CSS v3 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+    <!-- 统一的 Tailwind 配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#FF7A00',
+                        secondary: '#FFB347',
+                        accent: '#FFD700',
+                        light: '#FFF5EB',
+                        dark: '#333333',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    animation: {
+                        'swipe': 'swipe 1s ease-in-out',
+                        'fade-in': 'fadeIn 0.5s ease-in-out',
+                        'slide-in': 'slideIn 0.5s ease-in-out',
+                    },
+                    keyframes: {
+                        swipe: {
+                            '0%': { transform: 'translateX(-100%)' },
+                            '50%': { transform: 'translateX(0)' },
+                            '100%': { transform: 'translateX(100%)' },
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideIn: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        },
+                    },
+                }
+            }
+        }
+    </script>
+
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .glass-effect {
+                background: rgba(255, 255, 255, 0.8);
+                backdrop-filter: blur(10px);
+                -webkit-backdrop-filter: blur(10px);
+            }
+            .card-shadow {
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            }
+            .gradient-primary {
+                background: linear-gradient(135deg, #FF7A00 0%, #FFB347 100%);
+            }
+            .gradient-secondary {
+                background: linear-gradient(135deg, #FFB347 0%, #FFD700 100%);
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 min-h-screen">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-sm sticky top-0 z-30">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div
+                    class="w-10 h-10 rounded-full overflow-hidden border border-orange-100 bg-white flex items-center justify-center shrink-0">
+                    <img src="./logo.png" alt="橙心国际教育 Logo" class="w-full h-full object-contain">
+                </div>
+                <h1 class="text-xl font-bold text-primary">橙心国际教育积分系统</h1>
+            </div>
+            <div class="flex items-center space-x-4">
+                <button id="toggleView"
+                    class="px-4 py-2 bg-light text-primary rounded-lg hover:bg-primary hover:text-white transition-colors flex items-center">
+                    <i class="fa fa-user-circle mr-2"></i>
+                    <span id="viewText">管理员登录</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区域 -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- 前台界面 -->
+        <section id="frontDeskView" class="max-w-4xl mx-auto">
+            <!-- 欢迎区域 -->
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold text-gray-800 mb-2">欢迎使用积分系统</h2>
+                <p class="text-gray-600">请刷卡查询学员积分或进行积分操作</p>
+            </div>
+
+            <!-- 刷卡区域 -->
+            <div id="cardSwipeArea"
+                class="text-center cursor-pointer transition-all duration-300 mb-8 max-w-[760px] mx-auto">
+                <img src="./card-swipe.jpg" alt="积分系统刷卡区域示意图"
+                    class="w-full mx-auto rounded-lg object-contain max-h-[320px] md:max-h-[420px]">
+            </div>
+
+            <!-- 学员信息区域 -->
+            <div id="studentInfoArea" class="hidden">
+                <!-- 学员基本信息 -->
+                <div class="bg-white rounded-xl p-6 shadow-sm mb-6">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+                        <div class="flex items-center space-x-4 mb-4 md:mb-0">
+                            <div
+                                class="w-16 h-16 rounded-full bg-light flex items-center justify-center text-primary text-2xl font-bold">
+                                <span id="studentInitial">--</span>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold text-gray-800 mb-1">
+                                    <span id="studentName">--</span>
+                                </h3>
+                                <p class="text-gray-600">
+                                    <i class="fa fa-phone mr-1"></i>
+                                    <span id="studentPhone">--</span>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-6">
+                            <div class="text-center">
+                                <p class="text-gray-500">剩余积分</p>
+                                <p id="studentPoints" class="text-3xl font-bold text-primary">--</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 打卡控制 -->
+                <div id="checkInControls" class="mb-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-primary">打卡签到</h3>
+                        <div class="flex space-x-3">
+                            <button id="checkInButton"
+                                class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-opacity-90 transition-colors flex items-center">
+                                <i class="fa fa-check-circle mr-2"></i>
+                                立即打卡
+                            </button>
+                        </div>
+                    </div>
+                    <div id="checkInStatus" class="hidden">
+                        <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                            <div class="flex items-center mb-2">
+                                <i class="fa fa-spinner fa-spin text-green-600 mr-2"></i>
+                                <span id="checkInMessage" class="font-medium text-green-800">处理中...</span>
+                            </div>
+                            <p id="checkInProgress" class="text-green-700 text-sm">正在初始化系统</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 积分奖励快捷操作 -->
+                <div id="pointsQuickActions" class="mb-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-primary">积分奖励</h3>
+                        <div class="text-sm text-gray-500">点击下方按钮快速发放积分</div>
+                    </div>
+
+                    <!-- 积分原因快捷按钮 -->
+                    <div id="quickEarnButtons" class="flex flex-col gap-2">
+                        <!-- 按钮将通过JavaScript动态生成 -->
+                        <div class="animate-pulse text-center py-4 text-gray-400">加载中...</div>
+                    </div>
+                </div>
+
+                <div class="h-px bg-gray-200 my-4"></div>
+                <h3 class="text-lg font-semibold mb-4">积分记录</h3>
+
+                <!-- 积分记录列表 -->
+                <div id="transactionList" class="space-y-3 max-h-60 overflow-y-auto">
+                    <div class="text-center text-gray-500 py-8">
+                        <i class="fa fa-history text-4xl mb-2"></i>
+                        <p>暂无积分记录</p>
+                    </div>
+                </div>
+
+                <!-- 打卡记录 -->
+                <div id="checkInRecords" class="mt-6 hidden">
+                    <h3 class="text-lg font-semibold mb-4">打卡记录</h3>
+                    <div id="checkInList" class="space-y-3 max-h-40 overflow-y-auto">
+                        <!-- 打卡记录将通过JavaScript动态生成 -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 管理员登录界面 -->
+        <section id="adminLoginView" class="hidden max-w-md mx-auto">
+            <div class="bg-white rounded-xl p-8 shadow-sm">
+                <div class="text-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">管理员登录</h2>
+                    <p class="text-gray-600">请输入管理员密码</p>
+                </div>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-gray-700 mb-2">密码</label>
+                        <input type="password" id="adminPassword"
+                            class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                            placeholder="请输入管理员密码">
+                    </div>
+                    <button id="verifyPassword"
+                        class="w-full py-3 bg-primary text-white rounded-lg hover:bg-opacity-90 transition-colors flex items-center justify-center">
+                        <i class="fa fa-lock mr-2"></i>
+                        验证
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 管理员界面 -->
+        <section id="adminView" class="hidden">
+            <div class="bg-white rounded-xl p-6 shadow-sm">
+                <!-- 管理员选项卡导航 -->
+                <div class="border-b border-gray-200 mb-6">
+                    <nav class="flex space-x-8">
+                        <button class="admin-tab" data-tab="students"
+                            class="px-1 py-3 border-b-2 border-primary text-primary font-medium">
+                            <i class="fa fa-users mr-2"></i>学员管理
+                        </button>
+                        <button class="admin-tab" data-tab="earnPoints"
+                            class="px-1 py-3 border-b-2 border-transparent text-gray-500 hover:text-primary hover:border-primary transition-colors">
+                            <i class="fa fa-plus-circle mr-2"></i>积分发放
+                        </button>
+                        <button class="admin-tab" data-tab="usePoints"
+                            class="px-1 py-3 border-b-2 border-transparent text-gray-500 hover:text-primary hover:border-primary transition-colors">
+                            <i class="fa fa-minus-circle mr-2"></i>积分使用
+                        </button>
+                        <button class="admin-tab" data-tab="shortcuts"
+                            class="px-1 py-3 border-b-2 border-transparent text-gray-500 hover:text-primary hover:border-primary transition-colors">
+                            <i class="fa fa-list mr-2"></i>快捷选项管理
+                        </button>
+                    </nav>
+                </div>
+
+                <!-- 学员管理选项卡内容 -->
+                <div id="studentsTab" class="admin-tab-content">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-semibold text-gray-800">学员管理</h3>
+                        <button id="addStudentBtn"
+                            class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-opacity-90 transition-colors flex items-center">
+                            <i class="fa fa-plus mr-2"></i>
+                            添加学员
+                        </button>
+                    </div>
+
+                    <!-- 学员搜索 -->
+                    <div class="mb-6">
+                        <div class="relative">
+                            <input type="text" id="studentSearch"
+                                class="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                                placeholder="搜索学员姓名或手机号">
+                            <i
+                                class="fa fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                        </div>
+                    </div>
+
+                    <!-- 学员表格 -->
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full bg-white">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        姓名</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        手机号</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        卡号</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        积分</th>
+                                    <th
+                                        class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="studentsTableBody" class="bg-white divide-y divide-gray-200">
+                                <!-- 学员数据将通过JavaScript动态填充 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 积分发放选项卡内容 -->
+                <div id="earnPointsTab" class="admin-tab-content hidden">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-6">积分发放</h3>
+                    <div class="max-w-lg">
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-gray-700 mb-2">选择学员</label>
+                                <div class="relative mb-2">
+                                    <input type="text" id="earnStudentSearch"
+                                        class="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                                        placeholder="输入姓名或手机号检索学员">
+                                    <i
+                                        class="fa fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                </div>
+                                <select id="earnStudentSelect"
+                                    class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+                                    <option value="">请选择学员</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 mb-2">积分数量</label>
+                                <input type="number" id="earnPointsAmount" min="1"
+                                    class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                                    placeholder="请输入积分数量">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 mb-2">获得原因</label>
+                                <div class="relative mb-2">
+                                    <input type="text" id="earnReasonSearch"
+                                        class="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                                        placeholder="输入关键字检索获得原因">
+                                    <i
+                                        class="fa fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                </div>
+                                <select id="earnPointsReason"
+                                    class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+                                    <option value="">请选择获得原因</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 mb-2">日期</label>
+                                <input type="date" id="earnPointsDate"
+                                    class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+                            </div>
+                            <button id="earnPointsBtn"
+                                class="w-full py-3 bg-green-600 text-white rounded-lg hover:bg-opacity-90 transition-colors flex items-center justify-center">
+                                <i class="fa fa-plus-circle mr-2"></i>
+                                发放积分
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 积分使用选项卡内容 -->
+                <div id="usePointsTab" class="admin-tab-content hidden">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-6">积分使用</h3>
+                    <div class="max-w-lg">
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-gray-700 mb-2">选择学员</label>
+                                <div class="relative mb-2">
+                                    <input type="text" id="useStudentSearch"
+                                        class="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                                        placeholder="输入姓名或手机号检索学员">
+                                    <i
+                                        class="fa fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                </div>
+                                <select id="useStudentSelect"
+                                    class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+                                    <option value="">请选择学员</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 mb-2">积分数量</label>
+                                <input type="number" id="usePointsAmount" min="1"
+                                    class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                                    placeholder="请输入积分数量">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 mb-2">使用原因</label>
+                                <div class="relative mb-2">
+                                    <input type="text" id="useReasonSearch"
+                                        class="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                                        placeholder="输入关键字检索使用原因">
+                                    <i
+                                        class="fa fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                </div>
+                                <select id="usePointsReason"
+                                    class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+                                    <option value="">请选择使用原因</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 mb-2">日期</label>
+                                <input type="date" id="usePointsDate"
+                                    class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+                            </div>
+                            <button id="usePointsBtn"
+                                class="w-full py-3 bg-red-600 text-white rounded-lg hover:bg-opacity-90 transition-colors flex items-center justify-center">
+                                <i class="fa fa-minus-circle mr-2"></i>
+                                使用积分
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 快捷选项管理选项卡内容 -->
+                <div id="shortcutsTab" class="admin-tab-content hidden">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- 积分获得原因选项 -->
+                        <div class="bg-light p-6 rounded-lg">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-lg font-semibold text-primary">积分获得原因选项</h3>
+                                <div class="flex space-x-2">
+                                    <button id="editEarnReasonBtn"
+                                        class="bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-opacity-90 transition-colors text-sm flex items-center">
+                                        <i class="fa fa-edit mr-1"></i>编辑
+                                    </button>
+                                    <button id="addEarnReasonBtn"
+                                        class="bg-primary text-white px-3 py-1 rounded-md hover:bg-opacity-90 transition-colors text-sm flex items-center">
+                                        <i class="fa fa-plus mr-1"></i>添加
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="earnReasonsList" class="space-y-2 max-h-60 overflow-y-auto">
+                                <!-- 快捷选项将通过JavaScript动态填充 -->
+                            </div>
+                            <div id="addEarnReasonForm" class="mt-4 hidden">
+                                <div class="space-y-3">
+                                    <div class="flex space-x-2">
+                                        <input type="text" id="newEarnReason"
+                                            class="flex-1 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                                            placeholder="输入新的获得原因">
+                                        <input type="number" id="newEarnPoints" min="-100" max="100" value="10"
+                                            class="w-24 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                                            placeholder="积分">
+                                    </div>
+                                    <div class="flex justify-end space-x-2">
+                                        <button id="saveEarnReasonBtn"
+                                            class="px-4 py-2 bg-primary text-white rounded-md hover:bg-opacity-90 transition-colors">保存</button>
+                                        <button id="cancelEarnReasonBtn"
+                                            class="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300">取消</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 编辑积分原因表单 -->
+                            <div id="editEarnReasonForm" class="mt-4 hidden">
+                                <div class="space-y-3">
+                                    <div class="flex space-x-2">
+                                        <input type="text" id="editEarnReason"
+                                            class="flex-1 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                                            placeholder="修改获得原因">
+                                        <input type="number" id="editEarnPoints" min="-100" max="100" value="10"
+                                            class="w-24 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                                            placeholder="积分">
+                                    </div>
+                                    <div class="flex justify-end space-x-2">
+                                        <button id="updateEarnReasonBtn"
+                                            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-opacity-90 transition-colors">更新</button>
+                                        <button id="cancelEditEarnReasonBtn"
+                                            class="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300">取消</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 积分使用原因选项 -->
+                        <div class="bg-light p-6 rounded-lg">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-lg font-semibold text-primary">积分使用原因选项</h3>
+                                <div class="flex space-x-2">
+                                    <button id="editUseReasonBtn"
+                                        class="bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-opacity-90 transition-colors text-sm flex items-center">
+                                        <i class="fa fa-edit mr-1"></i>编辑
+                                    </button>
+                                    <button id="addUseReasonBtn"
+                                        class="bg-primary text-white px-3 py-1 rounded-md hover:bg-opacity-90 transition-colors text-sm flex items-center">
+                                        <i class="fa fa-plus mr-1"></i>添加
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="useReasonsList" class="space-y-2 max-h-60 overflow-y-auto">
+                                <!-- 快捷选项将通过JavaScript动态填充 -->
+                            </div>
+                            <div id="addUseReasonForm" class="mt-4 hidden">
+                                <div class="space-y-3">
+                                    <div class="flex space-x-2">
+                                        <input type="text" id="newUseReason"
+                                            class="flex-1 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                                            placeholder="输入新的使用原因">
+                                        <input type="number" id="newUsePoints" min="1" max="100" value="5"
+                                            class="w-24 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                                            placeholder="积分">
+                                    </div>
+                                    <div class="flex justify-end space-x-2">
+                                        <button id="saveUseReasonBtn"
+                                            class="px-4 py-2 bg-primary text-white rounded-md hover:bg-opacity-90 transition-colors">保存</button>
+                                        <button id="cancelUseReasonBtn"
+                                            class="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300">取消</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 编辑使用原因表单 -->
+                            <div id="editUseReasonForm" class="mt-4 hidden">
+                                <div class="space-y-3">
+                                    <div class="flex space-x-2">
+                                        <input type="text" id="editUseReason"
+                                            class="flex-1 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                                            placeholder="修改使用原因">
+                                        <input type="number" id="editUsePoints" min="1" max="100" value="5"
+                                            class="w-24 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                                            placeholder="积分">
+                                    </div>
+                                    <div class="flex justify-end space-x-2">
+                                        <button id="updateUseReasonBtn"
+                                            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-opacity-90 transition-colors">更新</button>
+                                        <button id="cancelEditUseReasonBtn"
+                                            class="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300">取消</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 添加学员模态框 -->
+    <div id="addStudentModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg p-6 w-full max-w-md animate-slide-in">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold">添加新学员</h3>
+                <button id="closeStudentModal" class="text-gray-500 hover:text-gray-700">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-gray-700 mb-2">姓名</label>
+                    <input type="text" id="newStudentName"
+                        class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                        placeholder="请输入学员姓名">
+                </div>
+                <div>
+                    <label class="block text-gray-700 mb-2">手机号</label>
+                    <input type="tel" id="newStudentPhone"
+                        class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                        placeholder="请输入学员手机号">
+                </div>
+                <div>
+                    <label class="block text-gray-700 mb-2">卡号</label>
+                    <div class="flex space-x-2">
+                        <input type="text" id="newStudentCardId"
+                            class="flex-1 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                            placeholder="刷卡自动填充或手动输入">
+                        <button id="connectUSBButton"
+                            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-opacity-90 transition-colors flex items-center">
+                            <i class="fa fa-plug mr-2"></i>
+                            连接刷卡器
+                        </button>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-gray-700 mb-2">初始积分</label>
+                    <input type="number" id="newStudentPoints" min="0" value="0"
+                        class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                        placeholder="请输入初始积分">
+                </div>
+                <div class="flex space-x-3 pt-2">
+                    <button id="saveStudentBtn"
+                        class="flex-1 py-2 bg-primary text-white rounded-md hover:bg-opacity-90 transition-colors">保存</button>
+                    <button id="cancelAddStudentBtn"
+                        class="flex-1 py-2 bg-gray-200 rounded-md hover:bg-gray-300">取消</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 编辑学员模态框 -->
+    <div id="editStudentModal"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg p-6 w-full max-w-md animate-slide-in">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold">编辑学员信息</h3>
+                <button id="closeEditStudentModal" class="text-gray-500 hover:text-gray-700">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <input type="hidden" id="editStudentId">
+                <div>
+                    <label class="block text-gray-700 mb-2">姓名</label>
+                    <input type="text" id="editStudentName"
+                        class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                        placeholder="请输入学员姓名">
+                </div>
+                <div>
+                    <label class="block text-gray-700 mb-2">手机号</label>
+                    <input type="tel" id="editStudentPhone"
+                        class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                        placeholder="请输入学员手机号">
+                </div>
+                <div>
+                    <label class="block text-gray-700 mb-2">卡号</label>
+                    <input type="text" id="editStudentCardId" class="w-full px-4 py-2 border rounded-md bg-gray-100"
+                        readonly>
+                </div>
+                <div>
+                    <label class="block text-gray-700 mb-2">积分</label>
+                    <input type="number" id="editStudentPoints" min="0"
+                        class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                        placeholder="请输入积分">
+                </div>
+                <div class="flex space-x-3 pt-2">
+                    <button id="updateStudentBtn"
+                        class="flex-1 py-2 bg-primary text-white rounded-md hover:bg-opacity-90 transition-colors">更新</button>
+                    <button id="cancelEditStudentBtn"
+                        class="flex-1 py-2 bg-gray-200 rounded-md hover:bg-gray-300">取消</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 删除确认模态框 -->
+    <div id="deleteConfirmModal"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg p-6 w-full max-w-md animate-slide-in">
+            <div class="text-center mb-4">
+                <div class="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
+                    <i class="fa fa-exclamation-triangle text-red-500 text-2xl"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-800 mb-2">确认删除</h3>
+                <p class="text-gray-600">您确定要删除该学员吗？此操作无法撤销。</p>
+            </div>
+            <div class="flex space-x-3">
+                <button id="confirmDeleteBtn"
+                    class="flex-1 py-2 bg-red-600 text-white rounded-md hover:bg-opacity-90 transition-colors">确认删除</button>
+                <button id="cancelDeleteBtn" class="flex-1 py-2 bg-gray-200 rounded-md hover:bg-gray-300">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 通知提示 -->
+    <div id="notification"
+        class="fixed top-4 right-4 z-50 max-w-xs transform translate-x-full transition-transform duration-300">
+        <div class="bg-white rounded-lg shadow-lg p-4 border-l-4 border-primary">
+            <div class="flex items-start">
+                <div id="notificationIcon" class="flex-shrink-0 text-primary mr-3">
+                    <i class="fa fa-info-circle text-xl"></i>
+                </div>
+                <div class="flex-1">
+                    <h4 id="notificationTitle" class="font-semibold text-gray-800 mb-1">通知标题</h4>
+                    <p id="notificationMessage" class="text-gray-600 text-sm">通知内容</p>
+                </div>
+                <button id="closeNotification" class="text-gray-400 hover:text-gray-600 ml-4">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // 全局变量
+        let pointsSystem;
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            pointsSystem = new PointsSystem();
+        });
+
+        // 积分系统主类
+        class PointsSystem {
+            constructor() {
+                // 初始化数据
+                this.students = [];
+                this.transactions = [];
+                this.shortcuts = this.createDefaultShortcuts();
+                this.currentView = 'front'; // 'front' 或 'admin'
+                this.currentAdminTab = 'students';
+                this.loggedIn = false;
+                this.adminPassword = 'admin123'; // 默认管理员密码
+                this.currentStudentId = null;
+                this.deleteStudentId = null;
+                this.currentEditIndex = null;
+                this.currentEditType = null;
+                this.cardTags = {}; // 磁卡标签映射表
+                this.checkInRecords = []; // 打卡记录
+                this.writeCardSupported = false; // 是否支持写入磁卡
+                this.apiBase = '/api';
+                this.cloudVersion = 0;
+                this.syncInProgress = false;
+                this.syncPending = false;
+                this.lastSyncErrorAt = 0;
+                this.cloudSyncTimer = null;
+                // 本地待同步的事务队列（防止 409 冲突或轮询覆盖时丢失变更）
+                this.pendingTransactions = [];
+                this.hasDirtyData = false;
+
+                // 刷卡器相关属性
+                this.cardReader = {
+                    isReading: false,        // 是否正在读取卡号
+                    cardData: '',            // 存储读取的卡号数据
+                    startTime: 0,            // 开始读取时间
+                    maxTime: 1000,           // 最大读取时间（毫秒）
+                    minLength: 4,            // 卡号最小长度
+                    prefix: '',              // 卡号前缀（根据实际刷卡器调整）
+                    suffix: '',              // 卡号后缀（根据实际刷卡器调整）
+                    readTimeout: 120,        // 字符流空闲判定（毫秒）
+                    readTimer: null,         // 空闲判定定时器
+                    endKeys: ['Enter', 'NumpadEnter', 'Tab'],
+                    allowedChars: /^[0-9A-Za-z-]$/ // 允许字符（兼容数字/字母卡号）
+                };
+
+                this.initEventListeners();
+                this.loadDataFromCloudBase();
+                this.startCloudPolling();
+                this.initCardReader();
+                this.checkWriteCardSupport();
+            }
+
+            createDefaultShortcuts() {
+                return {
+                    earnReasons: [
+                        { id: '1', name: '按时完成作业', points: 1 },
+                        { id: '2', name: '按时完成作业', points: 2 },
+                        { id: '3', name: '按时完成作业', points: 3 },
+                        { id: '4', name: '上课积极表现', points: 1 },
+                        { id: '5', name: '上课积极表现', points: 2 },
+                        { id: '6', name: '上课积极表现', points: 3 },
+                        { id: '7', name: '测试成绩表现', points: 1 },
+                        { id: '8', name: '测试成绩表现', points: 2 },
+                        { id: '9', name: '测试成绩表现', points: 3 },
+                        { id: '10', name: '介绍同学上课', points: 10 },
+                        { id: '11', name: '积分兑换', points: -50 },
+                        { id: '12', name: '破坏公共设施', points: -10 },
+                        { id: '13', name: '扰乱课堂纪律', points: -1 }
+                    ],
+                    useReasons: [
+                        { id: '1', name: '换取小熊饼干', points: 5 },
+                        { id: '2', name: '换取铅笔', points: 3 },
+                        { id: '3', name: '换取笔记本', points: 8 },
+                        { id: '4', name: '换取橡皮擦', points: 2 },
+                        { id: '5', name: '换取小礼品', points: 15 },
+                        { id: '6', name: '抵扣作业', points: 10 }
+                    ]
+                };
+            }
+
+            ensureShortcutDefaults() {
+                const defaults = this.createDefaultShortcuts();
+
+                if (!this.shortcuts || typeof this.shortcuts !== 'object') {
+                    this.shortcuts = defaults;
+                    return;
+                }
+
+                if (!Array.isArray(this.shortcuts.earnReasons) || this.shortcuts.earnReasons.length === 0) {
+                    this.shortcuts.earnReasons = defaults.earnReasons;
+                }
+
+                if (!Array.isArray(this.shortcuts.useReasons) || this.shortcuts.useReasons.length === 0) {
+                    this.shortcuts.useReasons = defaults.useReasons;
+                }
+            }
+
+            // 初始化示例数据
+            initSampleData() {
+                // 创建示例学员
+                const sampleStudents = [
+                    {
+                        id: this.generateId(),
+                        name: '小明',
+                        phone: '13800138001',
+                        cardId: this.generateCardId(),
+                        points: 100,
+                        createdAt: new Date().toISOString()
+                    },
+                    {
+                        id: this.generateId(),
+                        name: '小红',
+                        phone: '13800138002',
+                        cardId: this.generateCardId(),
+                        points: 75,
+                        createdAt: new Date().toISOString()
+                    },
+                    {
+                        id: this.generateId(),
+                        name: '小华',
+                        phone: '13800138003',
+                        cardId: this.generateCardId(),
+                        points: 120,
+                        createdAt: new Date().toISOString()
+                    }
+                ];
+
+                // 创建示例交易记录
+                const today = new Date();
+                const yesterday = new Date(today);
+                yesterday.setDate(yesterday.getDate() - 1);
+
+                const lastWeek = new Date(today);
+                lastWeek.setDate(lastWeek.getDate() - 7);
+
+                const sampleTransactions = [
+                    {
+                        id: this.generateId(),
+                        studentId: sampleStudents[0].id,
+                        type: 'earn',
+                        points: 10,
+                        reason: '上课认真听讲',
+                        date: lastWeek.toISOString()
+                    },
+                    {
+                        id: this.generateId(),
+                        studentId: sampleStudents[0].id,
+                        type: 'use',
+                        points: 10,
+                        reason: '换取小熊饼干',
+                        date: yesterday.toISOString()
+                    },
+                    {
+                        id: this.generateId(),
+                        studentId: sampleStudents[1].id,
+                        type: 'earn',
+                        points: 15,
+                        reason: '完成作业优秀',
+                        date: lastWeek.toISOString()
+                    },
+                    {
+                        id: this.generateId(),
+                        studentId: sampleStudents[2].id,
+                        type: 'earn',
+                        points: 20,
+                        reason: '考试成绩优异',
+                        date: yesterday.toISOString()
+                    }
+                ];
+
+                // 保存到localStorage
+                this.students = sampleStudents;
+                this.transactions = sampleTransactions;
+
+                // 保存到localStorage
+                this.saveData();
+
+                console.log('示例数据初始化成功');
+                this.updateUI();
+            }
+
+            // 从云端加载数据，失败时回退本地缓存
+            async loadDataFromCloudBase(showErrorNotification = true) {
+                const hasLocalCache = this.loadLocalDataCache();
+
+                try {
+                    const response = await fetch(`${this.apiBase}/state`, { cache: 'no-store' });
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+
+                    const payload = await response.json();
+                    if (payload && payload.data) {
+                        this.applyStateSnapshot(payload.data);
+                        this.ensureShortcutDefaults();
+                        this.cloudVersion = typeof payload.version === 'number' ? payload.version : 0;
+                        this.saveLocalDataCache();
+                        this.updateUI();
+                        return;
+                    }
+
+                    if (!hasLocalCache) {
+                        this.initSampleData();
+                        return;
+                    }
+
+                    this.updateUI();
+                } catch (error) {
+                    console.error('云端加载失败，回退本地缓存:', error);
+
+                    if (!hasLocalCache) {
+                        this.initSampleData();
+                        return;
+                    }
+
+                    this.updateUI();
+                    if (showErrorNotification) {
+                        this.showNotification('warning', '云端不可用', '当前使用本地缓存，网络恢复后会自动同步');
+                    }
+                }
+            }
+
+            getStateSnapshot() {
+                return {
+                    students: this.students,
+                    transactions: this.transactions,
+                    shortcuts: this.shortcuts,
+                    cardTags: this.cardTags,
+                    checkInRecords: this.checkInRecords
+                };
+            }
+
+            applyStateSnapshot(snapshot) {
+                if (!snapshot || typeof snapshot !== 'object') {
+                    return;
+                }
+
+                this.students = Array.isArray(snapshot.students) ? snapshot.students : [];
+                this.transactions = Array.isArray(snapshot.transactions) ? snapshot.transactions : [];
+
+                if (
+                    snapshot.shortcuts &&
+                    Array.isArray(snapshot.shortcuts.earnReasons) &&
+                    Array.isArray(snapshot.shortcuts.useReasons)
+                ) {
+                    this.shortcuts = snapshot.shortcuts;
+                }
+
+                this.cardTags = snapshot.cardTags && typeof snapshot.cardTags === 'object'
+                    ? snapshot.cardTags
+                    : {};
+                this.checkInRecords = Array.isArray(snapshot.checkInRecords) ? snapshot.checkInRecords : [];
+                this.ensureShortcutDefaults();
+            }
+
+            loadLocalDataCache() {
+                try {
+                    let hasAnyData = false;
+                    const savedStudents = localStorage.getItem('orangeHeart_students');
+                    const savedTransactions = localStorage.getItem('orangeHeart_transactions');
+                    const savedShortcuts = localStorage.getItem('orangeHeart_shortcuts');
+                    const savedCardTags = localStorage.getItem('orangeHeart_cardTags');
+                    const savedCheckInRecords = localStorage.getItem('orangeHeart_checkInRecords');
+
+                    if (savedStudents) {
+                        this.students = JSON.parse(savedStudents);
+                        hasAnyData = true;
+                    }
+
+                    if (savedTransactions) {
+                        this.transactions = JSON.parse(savedTransactions);
+                        hasAnyData = true;
+                    }
+
+                    if (savedShortcuts) {
+                        this.shortcuts = JSON.parse(savedShortcuts);
+                        hasAnyData = true;
+                    }
+
+                    if (savedCardTags) {
+                        this.cardTags = JSON.parse(savedCardTags);
+                        hasAnyData = true;
+                    }
+
+                    if (savedCheckInRecords) {
+                        this.checkInRecords = JSON.parse(savedCheckInRecords);
+                        hasAnyData = true;
+                    }
+
+                    this.ensureShortcutDefaults();
+                    return hasAnyData;
+                } catch (error) {
+                    console.error('本地缓存读取失败:', error);
+                    return false;
+                }
+            }
+
+            saveLocalDataCache() {
+                localStorage.setItem('orangeHeart_students', JSON.stringify(this.students));
+                localStorage.setItem('orangeHeart_transactions', JSON.stringify(this.transactions));
+                localStorage.setItem('orangeHeart_shortcuts', JSON.stringify(this.shortcuts));
+                localStorage.setItem('orangeHeart_cardTags', JSON.stringify(this.cardTags));
+                localStorage.setItem('orangeHeart_checkInRecords', JSON.stringify(this.checkInRecords));
+            }
+
+            startCloudPolling() {
+                if (this.cloudSyncTimer) {
+                    clearInterval(this.cloudSyncTimer);
+                }
+
+                this.cloudSyncTimer = setInterval(() => {
+                    this.pullLatestCloudData();
+                }, 8000);
+            }
+
+            async pullLatestCloudData() {
+                if (this.syncInProgress) {
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`${this.apiBase}/state`, { cache: 'no-store' });
+                    if (!response.ok) {
+                        return;
+                    }
+
+                    const payload = await response.json();
+                    const latestVersion = typeof payload.version === 'number' ? payload.version : 0;
+
+                    if (latestVersion > this.cloudVersion && payload.data) {
+                        if (this.hasDirtyData && this.pendingTransactions.length > 0) {
+                            this.mergeServerDataWithPending(payload.data);
+                        } else {
+                            this.applyStateSnapshot(payload.data);
+                        }
+                        this.cloudVersion = latestVersion;
+                        this.saveLocalDataCache();
+                        this.updateUI();
+
+                        if (this.hasDirtyData) {
+                            this.syncDataToCloud();
+                        }
+                    }
+                } catch (error) {
+                    console.warn('拉取云端更新失败:', error);
+                }
+            }
+
+            mergeServerDataWithPending(serverData) {
+                this.applyStateSnapshot(serverData);
+
+                const pending = this.pendingTransactions.slice();
+                for (const pt of pending) {
+                    const existsInServer = this.transactions.some(t => t.id === pt.id);
+                    if (existsInServer) {
+                        continue;
+                    }
+                    this.transactions.push({
+                        id: pt.id, studentId: pt.studentId, type: pt.type,
+                        points: pt.points, reason: pt.reason, date: pt.date
+                    });
+                    const si = this.students.findIndex(s => s.id === pt.studentId);
+                    if (si !== -1) {
+                        this.students[si].points += pt._pointsDelta;
+                    }
+                }
+
+                console.log(`合并完成: 重放 ${pending.length} 条本地待同步事务`);
+            }
+
+            async syncDataToCloud() {
+                if (this.syncInProgress) {
+                    this.syncPending = true;
+                    return;
+                }
+
+                this.syncInProgress = true;
+                try {
+                    const response = await fetch(`${this.apiBase}/state`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            baseVersion: this.cloudVersion,
+                            data: this.getStateSnapshot()
+                        })
+                    });
+
+                    if (response.status === 409) {
+                        console.warn('版本冲突(409)，尝试合并本地变更与服务器数据');
+                        try {
+                            const freshResp = await fetch(`${this.apiBase}/state`, { cache: 'no-store' });
+                            if (freshResp.ok) {
+                                const freshPayload = await freshResp.json();
+                                if (freshPayload && freshPayload.data) {
+                                    this.mergeServerDataWithPending(freshPayload.data);
+                                    this.cloudVersion = typeof freshPayload.version === 'number' ? freshPayload.version : 0;
+                                    this.saveLocalDataCache();
+                                    this.updateUI();
+                                    // 合并后重新推送
+                                    this.syncPending = true;
+                                }
+                            }
+                        } catch (mergeErr) {
+                            console.error('合并失败:', mergeErr);
+                        }
+                        return;
+                    }
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+
+                    const payload = await response.json();
+                    if (typeof payload.version === 'number') {
+                        this.cloudVersion = payload.version;
+                    }
+                    // 同步成功，清空待同步队列
+                    this.pendingTransactions = [];
+                    this.hasDirtyData = false;
+                    this.lastSyncErrorAt = 0;
+                } catch (error) {
+                    console.error('云端同步失败:', error);
+
+                    const now = Date.now();
+                    if (now - this.lastSyncErrorAt > 30000) {
+                        this.lastSyncErrorAt = now;
+                        this.showNotification('warning', '同步延迟', '网络异常，数据已暂存本地，恢复后会继续同步');
+                    }
+                } finally {
+                    this.syncInProgress = false;
+                    if (this.syncPending) {
+                        this.syncPending = false;
+                        this.syncDataToCloud();
+                    }
+                }
+            }
+
+            // 检查磁卡写入支持
+            checkWriteCardSupport() {
+                // 检查WebUSB API支持
+                if ('usb' in navigator) {
+                    this.writeCardSupported = true;
+                    console.log('检测到WebUSB支持，可以进行磁卡写入操作');
+                } else {
+                    console.log('当前浏览器不支持WebUSB API，将使用模拟写入模式');
+                }
+            }
+
+            // 向磁卡写入数据
+            async writeToCard(student, data) {
+                if (!this.writeCardSupported) {
+                    // 使用模拟写入模式
+                    return this.simulateWriteToCard(student, data);
+                }
+
+                try {
+                    // 尝试连接USB设备
+                    const device = await navigator.usb.requestDevice({
+                        filters: [{
+                            classCode: 0xFF, // 厂商特定设备
+                            subclassCode: 0x00,
+                            protocolCode: 0x00
+                        }]
+                    });
+
+                    await device.open();
+                    await device.selectConfiguration(1);
+                    await device.claimInterface(0);
+
+                    // 准备写入数据
+                    const cardData = this.prepareCardData(student, data);
+                    const writeData = new TextEncoder().encode(cardData);
+
+                    // 写入数据到设备
+                    await device.transferOut(1, writeData);
+
+                    // 关闭设备连接
+                    await device.close();
+
+                    console.log('磁卡写入成功:', cardData);
+                    return { success: true, message: '磁卡写入成功' };
+                } catch (error) {
+                    console.error('磁卡写入失败:', error);
+                    // 失败时回退到模拟模式
+                    return this.simulateWriteToCard(student, data);
+                }
+            }
+
+            // 模拟磁卡写入
+            simulateWriteToCard(student, data) {
+                try {
+                    // 创建包含学员信息和积分数据的卡片数据
+                    const cardData = this.prepareCardData(student, data);
+
+                    // 将数据存储在localStorage中，模拟卡片数据
+                    const cardStorageKey = `orangeHeart_card_${student.cardId}`;
+                    localStorage.setItem(cardStorageKey, cardData);
+
+                    console.log('模拟磁卡写入成功:', cardData);
+                    return { success: true, message: '磁卡写入成功（模拟模式）' };
+                } catch (error) {
+                    console.error('模拟磁卡写入失败:', error);
+                    return { success: false, message: '磁卡写入失败' };
+                }
+            }
+
+            // 准备卡片数据
+            prepareCardData(student, data) {
+                const cardData = {
+                    version: 1,
+                    studentId: student.id,
+                    cardId: student.cardId,
+                    studentName: student.name,
+                    points: student.points,
+                    lastUpdated: new Date().toISOString(),
+                    additionalData: data || {}
+                };
+
+                return JSON.stringify(cardData);
+            }
+
+            // 从磁卡读取数据
+            async readFromCard(cardId) {
+                try {
+                    // 先尝试从localStorage读取模拟的卡片数据
+                    const cardStorageKey = `orangeHeart_card_${cardId}`;
+                    const cardData = localStorage.getItem(cardStorageKey);
+
+                    if (cardData) {
+                        console.log('从模拟存储中读取卡片数据:', cardData);
+                        return JSON.parse(cardData);
+                    }
+
+                    // 如果没有模拟数据且支持WebUSB，尝试从实际设备读取
+                    if (this.writeCardSupported) {
+                        return await this.readFromPhysicalCard();
+                    }
+
+                    return null;
+                } catch (error) {
+                    console.error('读取卡片数据失败:', error);
+                    return null;
+                }
+            }
+
+            // 从物理卡片读取数据
+            async readFromPhysicalCard() {
+                try {
+                    const device = await navigator.usb.requestDevice({
+                        filters: [{
+                            classCode: 0xFF,
+                            subclassCode: 0x00,
+                            protocolCode: 0x00
+                        }]
+                    });
+
+                    await device.open();
+                    await device.selectConfiguration(1);
+                    await device.claimInterface(0);
+
+                    // 读取数据
+                    const result = await device.transferIn(1, 1024);
+                    const cardData = new TextDecoder().decode(result.data);
+
+                    await device.close();
+
+                    return JSON.parse(cardData);
+                } catch (error) {
+                    console.error('读取物理卡片失败:', error);
+                    return null;
+                }
+            }
+
+            // 更新积分快捷按钮
+            updateQuickEarnButtons() {
+                const quickEarnButtons = document.getElementById('quickEarnButtons');
+                if (!quickEarnButtons) return;
+
+                quickEarnButtons.innerHTML = '';
+                this.ensureShortcutDefaults();
+                const earnReasons = this.shortcuts.earnReasons;
+
+                if (earnReasons.length === 0) {
+                    quickEarnButtons.innerHTML = '<div class="text-center text-gray-400 py-4">暂无积分奖励选项</div>';
+                    return;
+                }
+
+                // 按名称分组（仅限正分且同名有多个分值的，如+1+2+3）
+                const groups = {};
+                const singles = [];
+                earnReasons.forEach((reason) => {
+                    const pts = Number(reason.points) || 0;
+                    if (pts > 0) {
+                        if (!groups[reason.name]) groups[reason.name] = [];
+                        groups[reason.name].push(reason);
+                    } else {
+                        singles.push(reason);
+                    }
+                });
+                // 单分值的正分也归入singles行（如介绍同学上课+10）
+                const groupRows = [];
+                const singlePositives = [];
+                Object.entries(groups).forEach(([name, reasons]) => {
+                    if (reasons.length > 1) {
+                        groupRows.push({ name, reasons });
+                    } else {
+                        singlePositives.push(reasons[0]);
+                    }
+                });
+                // 最后一行：单分值正分 + 所有负分
+                const lastRow = [...singlePositives, ...singles];
+
+                const btnH = 'min-h-[64px]';
+
+                // 渲染分组行：[类别标签] [+1分] [+2分] [+3分]
+                groupRows.forEach(({ name, reasons }) => {
+                    const row = document.createElement('div');
+                    row.className = 'flex items-stretch gap-2';
+
+                    const label = document.createElement('div');
+                    label.className = `w-32 shrink-0 flex items-center justify-center px-2 py-3 bg-gradient-to-br from-primary to-secondary text-white rounded-lg text-center text-sm font-semibold leading-tight ${btnH}`;
+                    label.textContent = name;
+                    row.appendChild(label);
+
+                    reasons.forEach(reason => {
+                        const pts = Number(reason.points) || 0;
+                        const btn = document.createElement('button');
+                        btn.className = `flex-1 flex items-center justify-center bg-gradient-to-br from-primary to-secondary text-white rounded-lg hover:shadow-lg transition-all duration-300 font-bold text-lg ${btnH}`;
+                        btn.textContent = `+${pts}分`;
+                        btn.addEventListener('click', () => this.giveQuickPoints(reason));
+                        row.appendChild(btn);
+                    });
+
+                    quickEarnButtons.appendChild(row);
+                });
+
+                // 渲染最后一行：所有单独按钮（介绍同学上课、积分兑换、破坏公共设施、扰乱课堂纪律）
+                if (lastRow.length > 0) {
+                    const row = document.createElement('div');
+                    row.className = 'flex items-stretch gap-2';
+                    lastRow.forEach(reason => {
+                        const pts = Number(reason.points) || 0;
+                        const isNeg = pts < 0;
+                        const isYellow = reason.name === '积分兑换' && pts === -50;
+                        const btn = document.createElement('button');
+                        let cls = `flex-1 flex flex-col items-center justify-center px-2 py-3 rounded-lg hover:shadow-lg transition-all duration-300 text-center ${btnH}`;
+                        if (isYellow) {
+                            cls += ' bg-gradient-to-br from-yellow-300 to-yellow-500 text-gray-900 hover:from-yellow-400 hover:to-yellow-600';
+                        } else if (isNeg) {
+                            cls += ' bg-gradient-to-br from-red-600 to-red-800 text-white';
+                        } else {
+                            cls += ' bg-gradient-to-br from-primary to-secondary text-white';
+                        }
+                        btn.className = cls;
+                        const sign = pts > 0 ? '+' : '';
+                        btn.innerHTML = `<span class="text-xs font-medium leading-tight mb-0.5">${reason.name}</span><span class="font-bold text-base">${sign}${pts}分</span>`;
+                        btn.addEventListener('click', () => this.giveQuickPoints(reason));
+                        row.appendChild(btn);
+                    });
+                    quickEarnButtons.appendChild(row);
+                }
+            }
+
+            // 更新积分兑换快捷按钮
+            updateQuickUseButtons() {
+                const quickUseButtons = document.getElementById('quickUseButtons');
+                if (!quickUseButtons) return;
+
+                // 清空现有按钮
+                quickUseButtons.innerHTML = '';
+                this.ensureShortcutDefaults();
+
+                // 使用快捷选项中的useReasons
+                const useReasons = this.shortcuts.useReasons;
+
+                if (useReasons.length === 0) {
+                    quickUseButtons.innerHTML = '<div class="text-center text-gray-400 py-4 col-span-3">暂无兑换选项</div>';
+                    return;
+                }
+
+                useReasons.forEach(reason => {
+                    const button = document.createElement('button');
+                    button.className = 'px-4 py-3 bg-gradient-to-br from-yellow-400 to-yellow-500 text-white rounded-lg hover:shadow-lg hover:from-yellow-500 hover:to-yellow-600 transition-all duration-300 flex items-center justify-center min-h-[80px]';
+                    button.innerHTML = `
+                        <div class="text-center">
+                            <div class="text-xs font-medium mb-1">${reason.name}</div>
+                            <div class="text-lg font-bold">-${reason.points}分</div>
+                        </div>
+                    `;
+
+                    button.addEventListener('click', () => {
+                        this.useQuickPoints(reason);
+                    });
+
+                    quickUseButtons.appendChild(button);
+                });
+            }
+
+            // 快速兑换积分
+            useQuickPoints(reason) {
+                if (!this.currentStudentId) {
+                    this.showNotification('error', '操作失败', '请先刷卡识别学员');
+                    return;
+                }
+
+                const student = this.students.find(s => s.id === this.currentStudentId);
+                if (!student) return;
+                const costPoints = Math.abs(Number(reason.points) || 0);
+                if (costPoints <= 0) {
+                    this.showNotification('error', '兑换失败', '兑换积分配置无效');
+                    return;
+                }
+
+                // 检查积分是否足够
+                if (student.points < costPoints) {
+                    this.showNotification('error', '兑换失败', `${student.name} 的积分不足，当前${student.points}分，需要${costPoints}分`);
+                    return;
+                }
+
+                // 创建积分记录
+                const transaction = {
+                    id: this.generateId(),
+                    studentId: student.id,
+                    type: 'use',
+                    points: costPoints,
+                    reason: reason.name,
+                    date: new Date().toISOString()
+                };
+
+                this.transactions.push(transaction);
+                this.pendingTransactions.push({ ...transaction, _pointsDelta: -costPoints });
+
+                const studentIndex = this.students.findIndex(s => s.id === student.id);
+                if (studentIndex !== -1) {
+                    this.students[studentIndex].points -= costPoints;
+                }
+
+                this.saveData();
+                this.updateFrontDeskUI();
+                this.showNotification('success', '兑换成功', `${student.name} 已兑换「${reason.name}」，扣除 ${costPoints} 积分！`);
+                this.playSuccessAnimation();
+            }
+
+            // 快速发放积分
+            giveQuickPoints(reason) {
+                if (!this.currentStudentId) {
+                    this.showNotification('error', '操作失败', '请先刷卡识别学员');
+                    return;
+                }
+
+                const student = this.students.find(s => s.id === this.currentStudentId);
+                if (!student) return;
+                const delta = Number(reason.points) || 0;
+                if (delta === 0) {
+                    this.showNotification('warning', '操作取消', '该快捷项积分为 0，未做变更');
+                    return;
+                }
+                const isDeduct = delta < 0;
+                const absPoints = Math.abs(delta);
+
+                // 创建积分记录
+                const transaction = {
+                    id: this.generateId(),
+                    studentId: student.id,
+                    type: isDeduct ? 'use' : 'earn',
+                    points: absPoints,
+                    reason: reason.name,
+                    date: new Date().toISOString()
+                };
+
+                // 添加积分记录
+                this.transactions.push(transaction);
+                this.pendingTransactions.push({ ...transaction, _pointsDelta: delta });
+
+                // 更新学员积分
+                const studentIndex = this.students.findIndex(s => s.id === student.id);
+                if (studentIndex !== -1) {
+                    this.students[studentIndex].points += delta;
+                }
+
+                // 保存数据
+                this.saveData();
+
+                // 更新UI
+                this.updateFrontDeskUI();
+
+                // 显示成功消息
+                if (isDeduct) {
+                    this.showNotification('success', '积分扣减', `已为 ${student.name} 扣除 ${absPoints} 积分！`);
+                } else {
+                    this.showNotification('success', '积分奖励', `已成功奖励 ${student.name} ${absPoints} 积分！`);
+                }
+
+                // 播放成功动画
+                this.playSuccessAnimation();
+            }
+
+            // 播放成功动画
+            playSuccessAnimation() {
+                const pointsDisplay = document.getElementById('studentPoints');
+                pointsDisplay.classList.add('scale-125', 'text-green-600');
+
+                setTimeout(() => {
+                    pointsDisplay.classList.remove('scale-125', 'text-green-600');
+                }, 500);
+            }
+
+            // 将学员信息写入磁卡
+            async writeStudentToCard() {
+                if (!this.currentStudentId) {
+                    this.showNotification('error', '写入失败', '请先刷卡识别学员');
+                    return;
+                }
+
+                const student = this.students.find(s => s.id === this.currentStudentId);
+                if (!student) return;
+
+                // 显示写入状态
+                const checkInStatus = document.getElementById('checkInStatus');
+                const writeCardButton = document.getElementById('writeCardButton');
+                const checkInMessage = document.getElementById('checkInMessage');
+                const checkInProgress = document.getElementById('checkInProgress');
+
+                checkInStatus.classList.remove('hidden');
+                writeCardButton.disabled = true;
+                writeCardButton.classList.add('opacity-50', 'cursor-not-allowed');
+
+                checkInMessage.textContent = '正在准备写入磁卡...';
+                checkInProgress.textContent = '初始化系统';
+
+                try {
+                    // 准备写入数据
+                    const writeData = {
+                        type: 'studentInfo',
+                        timestamp: new Date().toISOString(),
+                        deviceId: this.getDeviceId(),
+                        lastTransaction: this.transactions
+                            .filter(t => t.studentId === student.id)
+                            .sort((a, b) => new Date(b.date) - new Date(a.date))[0]
+                    };
+
+                    // 模拟写入过程
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    checkInMessage.textContent = '正在向磁卡写入数据...';
+                    checkInProgress.textContent = '写入学员信息和积分数据';
+
+                    // 模拟写入进度
+                    let progress = 0;
+                    const progressInterval = setInterval(() => {
+                        progress += 10;
+                        checkInProgress.textContent = `写入进度: ${progress}%`;
+
+                        if (progress >= 100) {
+                            clearInterval(progressInterval);
+
+                            // 执行实际的磁卡写入
+                            this.writeToCard(student, writeData).then(writeResult => {
+                                if (writeResult.success) {
+                                    checkInMessage.textContent = '正在验证写入结果...';
+                                    checkInProgress.textContent = '读取磁卡数据进行验证';
+
+                                    // 读取卡片数据进行验证
+                                    setTimeout(() => {
+                                        this.readFromCard(student.cardId).then(cardData => {
+                                            if (cardData) {
+                                                console.log('磁卡数据验证成功:', cardData);
+                                                this.showNotification('success', '写入成功', `已成功将 ${student.name} 的信息和积分数据写入磁卡！`);
+                                            } else {
+                                                this.showNotification('warning', '验证提示', '写入完成，但无法验证数据。请重新刷卡确认。');
+                                            }
+
+                                            // 恢复按钮状态
+                                            checkInStatus.classList.add('hidden');
+                                            writeCardButton.disabled = false;
+                                            writeCardButton.classList.remove('opacity-50', 'cursor-not-allowed');
+                                        });
+                                    }, 1000);
+                                } else {
+                                    // 写入失败
+                                    this.showNotification('error', '写入失败', writeResult.message || '磁卡写入失败，请重试');
+
+                                    // 恢复按钮状态
+                                    checkInStatus.classList.add('hidden');
+                                    writeCardButton.disabled = false;
+                                    writeCardButton.classList.remove('opacity-50', 'cursor-not-allowed');
+                                }
+                            });
+                        }
+                    }, 200);
+                } catch (error) {
+                    console.error('写入过程出错:', error);
+                    this.showNotification('error', '写入失败', '写入过程中出现错误，请重试');
+
+                    // 恢复按钮状态
+                    checkInStatus.classList.add('hidden');
+                    writeCardButton.disabled = false;
+                    writeCardButton.classList.remove('opacity-50', 'cursor-not-allowed');
+                }
+            }
+
+            // 保存数据到localStorage
+            saveData() {
+                try {
+                    this.hasDirtyData = true;
+                    this.saveLocalDataCache();
+                    this.syncDataToCloud();
+
+                    console.log('数据已保存');
+                } catch (error) {
+                    console.error('保存数据失败:', error);
+                    this.showNotification('error', '保存失败', '无法保存数据，请检查浏览器存储权限');
+                }
+            }
+
+            // 初始化事件监听器
+            initEventListeners() {
+                // 视图切换
+                document.getElementById('toggleView').addEventListener('click', () => {
+                    this.toggleView();
+                });
+
+                // 刷卡区域（仅通过USB刷卡器触发，已关闭模拟点击）
+
+                // USB刷卡器连接按钮
+                const connectUSBButton = document.getElementById('connectUSBButton');
+                if (connectUSBButton) {
+                    connectUSBButton.addEventListener('click', () => {
+                        this.connectUSBReader();
+                    });
+                }
+
+                // 监听USB设备连接/断开事件（仅在支持WebUSB时绑定）
+                if ('usb' in navigator && navigator.usb) {
+                    navigator.usb.addEventListener('connect', (event) => {
+                        this.handleUSBConnect(event);
+                    });
+
+                    navigator.usb.addEventListener('disconnect', (event) => {
+                        this.handleUSBDisconnect(event);
+                    });
+                } else {
+                    console.log('当前环境不支持WebUSB，已跳过USB事件绑定');
+                }
+
+                // 管理员密码验证
+                document.getElementById('verifyPassword').addEventListener('click', () => {
+                    this.verifyAdminPassword();
+                });
+
+                // 管理员选项卡切换
+                document.querySelectorAll('.admin-tab').forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        const tabId = tab.dataset.tab;
+                        this.switchAdminTab(tabId);
+                    });
+                });
+
+                // 添加学员按钮
+                document.getElementById('addStudentBtn').addEventListener('click', () => {
+                    this.showAddStudentModal();
+                });
+
+                // 关闭添加学员模态框
+                document.getElementById('closeStudentModal').addEventListener('click', () => {
+                    this.hideAddStudentModal();
+                });
+
+                document.getElementById('cancelAddStudentBtn').addEventListener('click', () => {
+                    this.hideAddStudentModal();
+                });
+
+                // 保存学员
+                document.getElementById('saveStudentBtn').addEventListener('click', () => {
+                    this.addStudent();
+                });
+
+                // 关闭编辑学员模态框
+                document.getElementById('closeEditStudentModal').addEventListener('click', () => {
+                    this.hideEditStudentModal();
+                });
+
+                document.getElementById('cancelEditStudentBtn').addEventListener('click', () => {
+                    this.hideEditStudentModal();
+                });
+
+                // 更新学员
+                document.getElementById('updateStudentBtn').addEventListener('click', () => {
+                    this.updateStudent();
+                });
+
+                // 确认删除学员
+                document.getElementById('confirmDeleteBtn').addEventListener('click', () => {
+                    this.deleteStudent();
+                });
+
+                // 取消删除学员
+                document.getElementById('cancelDeleteBtn').addEventListener('click', () => {
+                    this.hideDeleteConfirmModal();
+                });
+
+                // 发放积分按钮
+                document.getElementById('earnPointsBtn').addEventListener('click', () => {
+                    this.earnPoints();
+                });
+
+                // 使用积分按钮
+                document.getElementById('usePointsBtn').addEventListener('click', () => {
+                    this.usePoints();
+                });
+
+                // 添加获得原因按钮
+                document.getElementById('addEarnReasonBtn').addEventListener('click', () => {
+                    this.showAddReasonForm('earn');
+                });
+
+                // 添加使用原因按钮
+                document.getElementById('addUseReasonBtn').addEventListener('click', () => {
+                    this.showAddReasonForm('use');
+                });
+
+                // 编辑使用原因按钮
+                document.getElementById('editUseReasonBtn').addEventListener('click', () => {
+                    if (this.shortcuts.useReasons.length === 0) {
+                        this.showNotification('warning', '提示', '暂无使用原因可编辑');
+                        return;
+                    }
+                    this.editReason('use', 0);
+                });
+
+                // 保存获得原因
+                document.getElementById('saveEarnReasonBtn').addEventListener('click', () => {
+                    this.addReason('earn');
+                });
+
+                // 保存使用原因
+                document.getElementById('saveUseReasonBtn').addEventListener('click', () => {
+                    this.addReason('use');
+                });
+
+                // 取消添加获得原因
+                document.getElementById('cancelEarnReasonBtn').addEventListener('click', () => {
+                    this.hideAddReasonForm('earn');
+                });
+
+                // 编辑积分原因按钮
+                document.getElementById('editEarnReasonBtn').addEventListener('click', () => {
+                    if (this.shortcuts.earnReasons.length === 0) {
+                        this.showNotification('warning', '提示', '暂无积分原因可编辑');
+                        return;
+                    }
+                    // 默认编辑第一个
+                    this.editReason('earn', 0);
+                });
+
+                // 更新获得原因
+                document.getElementById('updateEarnReasonBtn').addEventListener('click', () => {
+                    this.updateReason();
+                });
+
+                // 取消编辑获得原因
+                document.getElementById('cancelEditEarnReasonBtn').addEventListener('click', () => {
+                    this.hideEditReasonForm('earn');
+                });
+
+                // 更新使用原因
+                document.getElementById('updateUseReasonBtn').addEventListener('click', () => {
+                    this.updateReason();
+                });
+
+                // 取消编辑使用原因
+                document.getElementById('cancelEditUseReasonBtn').addEventListener('click', () => {
+                    this.hideEditReasonForm('use');
+                });
+
+                // 取消添加使用原因
+                document.getElementById('cancelUseReasonBtn').addEventListener('click', () => {
+                    this.hideAddReasonForm('use');
+                });
+
+                // 关闭通知
+                document.getElementById('closeNotification').addEventListener('click', () => {
+                    this.hideNotification();
+                });
+
+                // 打卡按钮
+                document.getElementById('checkInButton').addEventListener('click', () => {
+                    this.performCheckIn();
+                });
+
+                // 学员管理 - 搜索功能
+                document.getElementById('studentSearch').addEventListener('input', () => {
+                    this.updateStudentsTable();
+                });
+
+                // 积分发放 - 学员检索
+                document.getElementById('earnStudentSearch').addEventListener('input', (e) => {
+                    this.filterStudentSelect('earnStudentSelect', e.target.value);
+                });
+
+                // 积分使用 - 学员检索
+                document.getElementById('useStudentSearch').addEventListener('input', (e) => {
+                    this.filterStudentSelect('useStudentSelect', e.target.value);
+                });
+
+                // 积分发放 - 原因检索
+                document.getElementById('earnReasonSearch').addEventListener('input', (e) => {
+                    this.filterReasonSelect('earnPointsReason', e.target.value, 'earn');
+                });
+
+                // 积分使用 - 原因检索
+                document.getElementById('useReasonSearch').addEventListener('input', (e) => {
+                    this.filterReasonSelect('usePointsReason', e.target.value, 'use');
+                });
+            }
+
+            // 更新UI
+            updateUI() {
+                if (this.currentView === 'front') {
+                    this.updateFrontDeskUI();
+                } else {
+                    this.updateAdminUI();
+                }
+            }
+
+            // 更新前台UI
+            updateFrontDeskUI() {
+                // 更新学员信息区域
+                if (this.currentStudentId) {
+                    const student = this.students.find(s => s.id === this.currentStudentId);
+                    if (student) {
+                        document.getElementById('studentName').textContent = student.name;
+                        document.getElementById('studentPhone').textContent = student.phone;
+                        document.getElementById('studentPoints').textContent = student.points;
+                        document.getElementById('studentInitial').textContent = student.name.charAt(0);
+
+                        // 更新积分记录
+                        this.updateTransactionList(student.id);
+
+                        // 更新打卡记录
+                        this.updateCheckInRecords();
+
+                        // 更新积分快捷按钮
+                        this.updateQuickEarnButtons();
+
+                        // 更新积分兑换快捷按钮
+                        this.updateQuickUseButtons();
+
+                        // 显示学员信息区域
+                        document.getElementById('studentInfoArea').classList.remove('hidden');
+                    }
+                }
+            }
+
+            // 更新积分记录列表
+            updateTransactionList(studentId) {
+                const transactionList = document.getElementById('transactionList');
+                const transactions = this.transactions
+                    .filter(t => t.studentId === studentId)
+                    .sort((a, b) => new Date(b.date) - new Date(a.date))
+                    .slice(0, 10);
+
+                if (transactions.length === 0) {
+                    transactionList.innerHTML = `
+                        <div class="text-center text-gray-500 py-8">
+                            <i class="fa fa-history text-4xl mb-2"></i>
+                            <p>暂无积分记录</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                transactionList.innerHTML = transactions.map(transaction => {
+                    const date = new Date(transaction.date);
+                    const formattedDate = `${date.getMonth() + 1}月${date.getDate()}日 ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+
+                    const rawPoints = Number(transaction.points) || 0;
+                    const signedPoints = transaction.type === 'use'
+                        ? -Math.abs(rawPoints)
+                        : rawPoints;
+                    const pointsClass = signedPoints < 0 ? 'text-red-600' : 'text-green-600';
+                    const pointsSign = signedPoints < 0 ? '-' : '+';
+
+                    return `
+                        <div class="flex justify-between items-center p-3 bg-white rounded-lg shadow-sm">
+                            <div>
+                                <div class="font-medium text-gray-800">${transaction.reason}</div>
+                                <div class="text-sm text-gray-500">${formattedDate}</div>
+                            </div>
+                            <div class="font-bold ${pointsClass}">${pointsSign}${Math.abs(signedPoints)}</div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // 更新打卡记录显示
+            updateCheckInRecords() {
+                const checkInRecords = document.getElementById('checkInRecords');
+                const checkInList = document.getElementById('checkInList');
+
+                if (!this.currentStudentId) {
+                    checkInRecords.classList.add('hidden');
+                    return;
+                }
+
+                // 获取当前学员的打卡记录
+                const studentRecords = this.checkInRecords.filter(record => record.studentId === this.currentStudentId);
+
+                if (studentRecords.length === 0) {
+                    checkInRecords.classList.add('hidden');
+                    return;
+                }
+
+                // 显示打卡记录区域
+                checkInRecords.classList.remove('hidden');
+
+                // 清空现有记录
+                checkInList.innerHTML = '';
+
+                // 添加打卡记录
+                studentRecords.slice(0, 5).forEach(record => {
+                    const item = document.createElement('div');
+                    item.className = 'flex justify-between items-center p-3 bg-white rounded-lg shadow-sm';
+                    item.innerHTML = `
+                        <div>
+                            <div class="font-medium text-gray-800">打卡签到</div>
+                            <div class="text-sm text-gray-500">${record.formattedDate} ${record.formattedTime}</div>
+                        </div>
+                        <div class="font-bold text-green-600">+${record.pointsEarned}</div>
+                    `;
+                    checkInList.appendChild(item);
+                });
+            }
+
+            // 更新管理员UI
+            updateAdminUI() {
+                if (!this.loggedIn) return;
+                this.ensureShortcutDefaults();
+
+                // 更新学员表格
+                this.updateStudentsTable();
+
+                // 更新学员选择下拉框
+                this.updateStudentSelects();
+
+                // 更新快捷选项列表
+                this.updateReasonsLists();
+
+                // 更新快捷选项下拉框
+                this.updateReasonSelects();
+
+                // 设置日期为今天
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('earnPointsDate').value = today;
+                document.getElementById('usePointsDate').value = today;
+            }
+
+            // 更新学员表格
+            updateStudentsTable() {
+                const tableBody = document.getElementById('studentsTableBody');
+                tableBody.innerHTML = '';
+
+                // 获取搜索关键词
+                const searchInput = document.getElementById('studentSearch');
+                const keyword = searchInput ? searchInput.value.trim().toLowerCase() : '';
+
+                // 过滤学员
+                const filtered = keyword
+                    ? this.students.filter(s =>
+                        s.name.toLowerCase().includes(keyword) ||
+                        s.phone.includes(keyword) ||
+                        (s.cardId && s.cardId.toLowerCase().includes(keyword))
+                    )
+                    : this.students;
+
+                if (filtered.length === 0 && keyword) {
+                    tableBody.innerHTML = `<tr><td colspan="5" class="px-6 py-8 text-center text-gray-400">未找到匹配「${keyword}」的学员</td></tr>`;
+                    return;
+                }
+
+                filtered.forEach(student => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap">${student.name}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">${student.phone}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">${student.cardId}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">${student.points}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right">
+                            <button class="edit-student text-primary hover:text-primary-dark mr-3" data-id="${student.id}">
+                                <i class="fa fa-pencil"></i> 编辑
+                            </button>
+                            <button class="delete-student text-red-500 hover:text-red-700" data-id="${student.id}">
+                                <i class="fa fa-trash"></i> 删除
+                            </button>
+                        </td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+
+                // 添加编辑和删除事件监听器
+                document.querySelectorAll('.edit-student').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const studentId = btn.dataset.id;
+                        this.showEditStudentModal(studentId);
+                    });
+                });
+
+                document.querySelectorAll('.delete-student').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const studentId = btn.dataset.id;
+                        this.showDeleteConfirmModal(studentId);
+                    });
+                });
+            }
+
+            // 筛选学员下拉框
+            filterStudentSelect(selectId, keyword) {
+                const select = document.getElementById(selectId);
+                if (!select) return;
+
+                const kw = keyword.trim().toLowerCase();
+                select.innerHTML = '<option value="">请选择学员</option>';
+
+                const filtered = kw
+                    ? this.students.filter(s =>
+                        s.name.toLowerCase().includes(kw) ||
+                        s.phone.includes(kw)
+                    )
+                    : this.students;
+
+                filtered.forEach(student => {
+                    const option = document.createElement('option');
+                    option.value = student.id;
+                    option.textContent = `${student.name} (${student.points}积分)`;
+                    select.appendChild(option);
+                });
+            }
+
+            // 更新学员选择下拉框
+            updateStudentSelects() {
+                const earnSelect = document.getElementById('earnStudentSelect');
+                const useSelect = document.getElementById('useStudentSelect');
+
+                // 清空现有选项
+                earnSelect.innerHTML = '<option value="">请选择学员</option>';
+                useSelect.innerHTML = '<option value="">请选择学员</option>';
+
+                // 添加学员选项
+                this.students.forEach(student => {
+                    const earnOption = document.createElement('option');
+                    earnOption.value = student.id;
+                    earnOption.textContent = `${student.name} (${student.points}积分)`;
+                    earnSelect.appendChild(earnOption);
+
+                    const useOption = document.createElement('option');
+                    useOption.value = student.id;
+                    useOption.textContent = `${student.name} (${student.points}积分)`;
+                    useSelect.appendChild(useOption);
+                });
+            }
+
+            // 更新快捷选项列表
+            updateReasonsLists() {
+                const earnList = document.getElementById('earnReasonsList');
+                const useList = document.getElementById('useReasonsList');
+
+                earnList.innerHTML = '';
+                useList.innerHTML = '';
+
+                // 添加获得原因列表项
+                this.shortcuts.earnReasons.forEach((reason, index) => {
+                    const item = document.createElement('div');
+                    item.className = 'flex justify-between items-center p-2 bg-white rounded-md hover:bg-gray-50 transition-colors';
+                    const isNegative = reason.points < 0;
+                    const displayPoints = Math.abs(reason.points);
+                    const pointColor = isNegative ? 'text-red-600' : 'text-green-600';
+                    item.innerHTML = `
+                        <div class="flex items-center space-x-2">
+                            <span class="font-medium">${reason.name}</span>
+                            <span class="text-sm ${pointColor} font-bold">${isNegative ? '-' : '+'}${displayPoints}分</span>
+                        </div>
+                        <div class="flex space-x-1">
+                            <button class="edit-earn-reason text-blue-500 hover:text-blue-700 px-2 py-1 rounded hover:bg-blue-50 transition-colors" data-index="${index}">
+                                <i class="fa fa-edit"></i>
+                            </button>
+                            <button class="delete-earn-reason text-red-500 hover:text-red-700 px-2 py-1 rounded hover:bg-red-50 transition-colors" data-index="${index}">
+                                <i class="fa fa-times"></i>
+                            </button>
+                        </div>
+                    `;
+                    earnList.appendChild(item);
+                });
+
+                // 添加使用原因列表项
+                this.shortcuts.useReasons.forEach((reason, index) => {
+                    const item = document.createElement('div');
+                    item.className = 'flex justify-between items-center p-2 bg-white rounded-md hover:bg-gray-50 transition-colors';
+                    const displayPoints = Math.abs(Number(reason.points) || 0);
+                    item.innerHTML = `
+                        <div class="flex items-center space-x-2">
+                            <span class="font-medium">${reason.name}</span>
+                            <span class="text-sm text-red-600 font-bold">-${displayPoints}分</span>
+                        </div>
+                        <div class="flex space-x-1">
+                            <button class="edit-use-reason text-blue-500 hover:text-blue-700 px-2 py-1 rounded hover:bg-blue-50 transition-colors" data-index="${index}">
+                                <i class="fa fa-edit"></i>
+                            </button>
+                            <button class="delete-use-reason text-red-500 hover:text-red-700 px-2 py-1 rounded hover:bg-red-50 transition-colors" data-index="${index}">
+                                <i class="fa fa-times"></i>
+                            </button>
+                        </div>
+                    `;
+                    useList.appendChild(item);
+                });
+
+                // 添加编辑和删除事件监听器
+                document.querySelectorAll('.edit-earn-reason').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const index = parseInt(btn.dataset.index);
+                        this.editReason('earn', index);
+                    });
+                });
+
+                document.querySelectorAll('.delete-earn-reason').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const index = parseInt(btn.dataset.index);
+                        this.deleteReason('earn', index);
+                    });
+                });
+
+                document.querySelectorAll('.edit-use-reason').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const index = parseInt(btn.dataset.index);
+                        this.editReason('use', index);
+                    });
+                });
+
+                document.querySelectorAll('.delete-use-reason').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const index = parseInt(btn.dataset.index);
+                        this.deleteReason('use', index);
+                    });
+                });
+            }
+
+            // 更新快捷选项下拉框
+            updateReasonSelects() {
+                const earnKeyword = document.getElementById('earnReasonSearch').value;
+                const useKeyword = document.getElementById('useReasonSearch').value;
+                this.filterReasonSelect('earnPointsReason', earnKeyword, 'earn');
+                this.filterReasonSelect('usePointsReason', useKeyword, 'use');
+            }
+
+            // 筛选原因下拉框
+            filterReasonSelect(selectId, keyword, type) {
+                const select = document.getElementById(selectId);
+                if (!select) return;
+
+                const kw = (keyword || '').trim().toLowerCase();
+                const list = Array.isArray(this.shortcuts[`${type}Reasons`]) ? this.shortcuts[`${type}Reasons`] : [];
+
+                select.innerHTML = type === 'earn'
+                    ? '<option value="">请选择获得原因</option>'
+                    : '<option value="">请选择使用原因</option>';
+
+                const filtered = kw ? list.filter(reason => reason.name.toLowerCase().includes(kw)) : list;
+                filtered.forEach(reason => {
+                    const points = Math.abs(Number(reason.points) || 0);
+                    const option = document.createElement('option');
+                    option.value = reason.name;
+                    if (type === 'earn') {
+                        const sign = (Number(reason.points) || 0) < 0 ? '-' : '+';
+                        option.textContent = `${reason.name} (${sign}${points}分)`;
+                    } else {
+                        option.textContent = `${reason.name} (-${points}分)`;
+                    }
+                    select.appendChild(option);
+                });
+            }
+
+            // 切换视图
+            toggleView() {
+                if (this.currentView === 'front') {
+                    if (!this.loggedIn) {
+                        this.showAdminLogin();
+                    } else {
+                        this.showAdminView();
+                    }
+                } else {
+                    this.showFrontDeskView();
+                }
+            }
+
+            // 显示前台界面
+            showFrontDeskView() {
+                document.getElementById('frontDeskView').classList.remove('hidden');
+                document.getElementById('adminLoginView').classList.add('hidden');
+                document.getElementById('adminView').classList.add('hidden');
+
+                document.getElementById('viewText').textContent = this.loggedIn ? '返回前台' : '管理员登录';
+                this.currentView = 'front';
+            }
+
+            // 显示管理员登录界面
+            showAdminLogin() {
+                document.getElementById('frontDeskView').classList.add('hidden');
+                document.getElementById('adminLoginView').classList.remove('hidden');
+                document.getElementById('adminView').classList.add('hidden');
+
+                document.getElementById('viewText').textContent = '返回前台';
+                this.currentView = 'admin';
+            }
+
+            // 显示管理员界面
+            showAdminView() {
+                document.getElementById('frontDeskView').classList.add('hidden');
+                document.getElementById('adminLoginView').classList.add('hidden');
+                document.getElementById('adminView').classList.remove('hidden');
+
+                document.getElementById('viewText').textContent = '返回前台';
+                this.currentView = 'admin';
+                this.updateAdminUI();
+            }
+
+            // 验证管理员密码
+            verifyAdminPassword() {
+                const password = document.getElementById('adminPassword').value;
+
+                if (password === this.adminPassword) {
+                    this.loggedIn = true;
+                    this.showAdminView();
+                    this.showNotification('success', '登录成功', '欢迎回来，管理员！');
+                } else {
+                    this.showNotification('error', '登录失败', '密码错误，请重试');
+                }
+
+                // 清空密码输入框
+                document.getElementById('adminPassword').value = '';
+            }
+
+            // 切换管理员选项卡
+            switchAdminTab(tabId) {
+                // 隐藏所有选项卡内容
+                document.querySelectorAll('.admin-tab-content').forEach(content => {
+                    content.classList.add('hidden');
+                });
+
+                // 显示选中的选项卡内容
+                document.getElementById(`${tabId}Tab`).classList.remove('hidden');
+
+                // 更新选项卡样式
+                document.querySelectorAll('.admin-tab').forEach(tab => {
+                    tab.classList.remove('border-primary', 'text-primary');
+                    tab.classList.add('border-transparent', 'text-gray-500');
+                });
+
+                document.querySelector(`[data-tab="${tabId}"]`).classList.remove('border-transparent', 'text-gray-500');
+                document.querySelector(`[data-tab="${tabId}"]`).classList.add('border-primary', 'text-primary');
+
+                this.currentAdminTab = tabId;
+            }
+
+            // 显示添加学员模态框
+            showAddStudentModal() {
+                document.getElementById('addStudentModal').classList.remove('hidden');
+                document.getElementById('newStudentName').focus();
+            }
+
+            // 隐藏添加学员模态框
+            hideAddStudentModal() {
+                document.getElementById('addStudentModal').classList.add('hidden');
+                document.getElementById('newStudentName').value = '';
+                document.getElementById('newStudentPhone').value = '';
+                document.getElementById('newStudentCardId').value = '';
+                document.getElementById('newStudentPoints').value = '0';
+            }
+
+            // 添加学员
+            addStudent() {
+                const name = document.getElementById('newStudentName').value.trim();
+                const phone = document.getElementById('newStudentPhone').value.trim();
+                const cardId = document.getElementById('newStudentCardId').value.trim();
+                const points = parseInt(document.getElementById('newStudentPoints').value) || 0;
+
+                if (!name || !phone) {
+                    this.showNotification('error', '添加失败', '请填写完整的学员信息');
+                    return;
+                }
+
+                if (!cardId) {
+                    this.showNotification('error', '添加失败', '请刷卡或输入卡号');
+                    return;
+                }
+
+                // 检查卡号是否已存在
+                const existingStudent = this.students.find(s => s.cardId === cardId);
+                if (existingStudent) {
+                    this.showNotification('error', '添加失败', '该卡号已被使用');
+                    return;
+                }
+
+                // 检查是否已经有磁卡标签映射
+                const existingTag = Object.values(this.cardTags).find(tag => tag === cardId);
+                if (existingTag) {
+                    const originalCardId = Object.keys(this.cardTags).find(key => this.cardTags[key] === cardId);
+                    this.showNotification('error', '添加失败', `此卡已映射到卡号 ${cardId}`);
+                    return;
+                }
+
+                // 创建新学员
+                const newStudent = {
+                    id: this.generateId(),
+                    name,
+                    phone,
+                    cardId: cardId,
+                    points,
+                    createdAt: new Date().toISOString()
+                };
+
+                // 添加到本地数据
+                this.students.push(newStudent);
+
+                // 如果是通过刷卡添加的学员，创建磁卡标签映射
+                const cardIdInput = document.getElementById('newStudentCardId');
+                if (cardIdInput && cardIdInput.value.trim() !== newStudent.cardId) {
+                    const originalCardId = cardIdInput.value.trim();
+                    this.cardTags[originalCardId] = newStudent.cardId;
+                    console.log(`创建磁卡标签映射: ${originalCardId} -> ${newStudent.cardId}`);
+                }
+
+                // 保存到localStorage
+                this.saveData();
+
+                this.updateAdminUI();
+                this.hideAddStudentModal();
+                this.showNotification('success', '添加成功', `已添加学员 ${name}，并创建磁卡标签`);
+            }
+
+            // 显示编辑学员模态框
+            showEditStudentModal(studentId) {
+                const student = this.students.find(s => s.id === studentId);
+                if (!student) return;
+
+                document.getElementById('editStudentId').value = student.id;
+                document.getElementById('editStudentName').value = student.name;
+                document.getElementById('editStudentPhone').value = student.phone;
+                document.getElementById('editStudentCardId').value = student.cardId;
+                document.getElementById('editStudentPoints').value = student.points;
+
+                document.getElementById('editStudentModal').classList.remove('hidden');
+            }
+
+            // 隐藏编辑学员模态框
+            hideEditStudentModal() {
+                document.getElementById('editStudentModal').classList.add('hidden');
+            }
+
+            // 更新学员信息
+            updateStudent() {
+                const id = document.getElementById('editStudentId').value;
+                const name = document.getElementById('editStudentName').value.trim();
+                const phone = document.getElementById('editStudentPhone').value.trim();
+                const points = parseInt(document.getElementById('editStudentPoints').value) || 0;
+
+                if (!name || !phone) {
+                    this.showNotification('error', '更新失败', '请填写完整的学员信息');
+                    return;
+                }
+
+                const studentIndex = this.students.findIndex(s => s.id === id);
+                if (studentIndex === -1) return;
+
+                const student = this.students[studentIndex];
+
+                // 准备更新数据
+                const updatedStudent = {
+                    ...student,
+                    name,
+                    phone
+                };
+
+                // 如果积分有变化，添加积分记录
+                const oldPoints = student.points;
+                if (points !== oldPoints) {
+                    const pointsDiff = points - oldPoints;
+                    const transaction = {
+                        id: this.generateId(),
+                        studentId: id,
+                        type: pointsDiff > 0 ? 'earn' : 'use',
+                        points: Math.abs(pointsDiff),
+                        reason: '管理员手动调整',
+                        date: new Date().toISOString()
+                    };
+
+                    // 添加积分记录到本地
+                    this.transactions.push(transaction);
+                    this.pendingTransactions.push({ ...transaction, _pointsDelta: pointsDiff });
+                    updatedStudent.points = points;
+                }
+
+                // 更新本地学员数据
+                this.students[studentIndex] = updatedStudent;
+
+                // 保存到localStorage
+                this.saveData();
+
+                this.updateAdminUI();
+                this.hideEditStudentModal();
+
+                let message = `已更新学员 ${name} 的信息`;
+                if (points !== oldPoints) {
+                    message += `，积分从 ${oldPoints} 调整为 ${points}`;
+                }
+
+                this.showNotification('success', '更新成功', message);
+            }
+
+            // 显示删除确认模态框
+            showDeleteConfirmModal(studentId) {
+                this.deleteStudentId = studentId;
+                document.getElementById('deleteConfirmModal').classList.remove('hidden');
+            }
+
+            // 隐藏删除确认模态框
+            hideDeleteConfirmModal() {
+                this.deleteStudentId = null;
+                document.getElementById('deleteConfirmModal').classList.add('hidden');
+            }
+
+            // 删除学员
+            deleteStudent() {
+                if (!this.deleteStudentId) return;
+
+                const studentIndex = this.students.findIndex(s => s.id === this.deleteStudentId);
+                if (studentIndex === -1) return;
+
+                const student = this.students[studentIndex];
+
+                // 从本地数据中删除学员
+                this.students.splice(studentIndex, 1);
+
+                // 删除相关的积分记录
+                this.transactions = this.transactions.filter(t => t.studentId !== this.deleteStudentId);
+
+                // 删除相关的打卡记录
+                this.checkInRecords = this.checkInRecords.filter(r => r.studentId !== this.deleteStudentId);
+
+                // 删除相关的磁卡标签映射
+                Object.keys(this.cardTags).forEach(key => {
+                    if (this.cardTags[key] === student.cardId) {
+                        delete this.cardTags[key];
+                    }
+                });
+
+                // 保存到localStorage
+                this.saveData();
+
+                this.updateAdminUI();
+                this.hideDeleteConfirmModal();
+                this.showNotification('success', '删除成功', `已删除学员 ${student.name}`);
+
+                // 如果当前显示的是被删除的学员，清除当前学员ID
+                if (this.currentStudentId === this.deleteStudentId) {
+                    this.currentStudentId = null;
+                    document.getElementById('studentInfoArea').classList.add('hidden');
+                }
+            }
+
+            // 发放积分
+            earnPoints() {
+                const studentId = document.getElementById('earnStudentSelect').value;
+                const points = parseInt(document.getElementById('earnPointsAmount').value);
+                const reason = document.getElementById('earnPointsReason').value;
+                const date = document.getElementById('earnPointsDate').value;
+
+                if (!studentId || !points || !reason || !date) {
+                    this.showNotification('error', '操作失败', '请填写完整的积分发放信息');
+                    return;
+                }
+
+                const student = this.students.find(s => s.id === studentId);
+                if (!student) return;
+
+                // 创建积分记录
+                const transaction = {
+                    id: this.generateId(),
+                    studentId,
+                    type: 'earn',
+                    points,
+                    reason,
+                    date: new Date(date).toISOString()
+                };
+
+                // 添加积分记录
+                this.transactions.push(transaction);
+                this.pendingTransactions.push({ ...transaction, _pointsDelta: points });
+
+                // 更新学员积分
+                const studentIndex = this.students.findIndex(s => s.id === studentId);
+                if (studentIndex !== -1) {
+                    this.students[studentIndex].points += points;
+                }
+
+                // 保存到localStorage
+                this.saveData();
+
+                // 清空表单
+                document.getElementById('earnPointsAmount').value = '';
+                document.getElementById('earnPointsReason').value = '';
+
+                this.updateAdminUI();
+                this.showNotification('success', '发放成功', `已为 ${student.name} 发放 ${points} 积分`);
+            }
+
+            // 使用积分
+            usePoints() {
+                const studentId = document.getElementById('useStudentSelect').value;
+                const points = parseInt(document.getElementById('usePointsAmount').value);
+                const reason = document.getElementById('usePointsReason').value;
+                const date = document.getElementById('usePointsDate').value;
+
+                if (!studentId || !points || !reason || !date) {
+                    this.showNotification('error', '操作失败', '请填写完整的积分使用信息');
+                    return;
+                }
+
+                const student = this.students.find(s => s.id === studentId);
+                if (!student) return;
+
+                // 检查积分是否足够
+                if (student.points < points) {
+                    this.showNotification('error', '操作失败', `${student.name} 的积分不足`);
+                    return;
+                }
+
+                // 创建积分记录
+                const transaction = {
+                    id: this.generateId(),
+                    studentId,
+                    type: 'use',
+                    points,
+                    reason,
+                    date: new Date(date).toISOString()
+                };
+
+                // 添加积分记录
+                this.transactions.push(transaction);
+                this.pendingTransactions.push({ ...transaction, _pointsDelta: -points });
+
+                // 更新学员积分
+                const studentIndex = this.students.findIndex(s => s.id === studentId);
+                if (studentIndex !== -1) {
+                    this.students[studentIndex].points -= points;
+                }
+
+                // 保存到localStorage
+                this.saveData();
+
+                // 清空表单
+                document.getElementById('usePointsAmount').value = '';
+                document.getElementById('usePointsReason').value = '';
+
+                this.updateAdminUI();
+                this.showNotification('success', '使用成功', `已为 ${student.name} 使用 ${points} 积分`);
+            }
+
+            // 显示添加原因表单
+            showAddReasonForm(type) {
+                this.hideEditReasonForm(type, false);
+                document.getElementById(`add${type.charAt(0).toUpperCase() + type.slice(1)}ReasonForm`).classList.remove('hidden');
+                document.getElementById(`new${type.charAt(0).toUpperCase() + type.slice(1)}Reason`).focus();
+            }
+
+            // 隐藏添加原因表单
+            hideAddReasonForm(type) {
+                document.getElementById(`add${type.charAt(0).toUpperCase() + type.slice(1)}ReasonForm`).classList.add('hidden');
+                document.getElementById(`new${type.charAt(0).toUpperCase() + type.slice(1)}Reason`).value = '';
+                document.getElementById(`new${type.charAt(0).toUpperCase() + type.slice(1)}Points`).value = type === 'earn' ? '10' : '5';
+            }
+
+            // 添加原因
+            addReason(type) {
+                const input = document.getElementById(`new${type.charAt(0).toUpperCase() + type.slice(1)}Reason`);
+                const pointsInput = document.getElementById(`new${type.charAt(0).toUpperCase() + type.slice(1)}Points`);
+                const reason = input.value.trim();
+                const points = parseInt(pointsInput.value) || 1;
+
+                if (!reason) {
+                    this.showNotification('error', '添加失败', '请输入原因内容');
+                    return;
+                }
+
+                if (type === 'earn' && (points < -100 || points > 100)) {
+                    this.showNotification('error', '添加失败', '发放积分必须在-100到100之间');
+                    return;
+                }
+
+                if (type === 'use' && (points < 1 || points > 100)) {
+                    this.showNotification('error', '添加失败', '扣减积分必须在1到100之间');
+                    return;
+                }
+
+                // 检查是否已存在
+                if (this.shortcuts[`${type}Reasons`].some(r => r.name === reason)) {
+                    this.showNotification('error', '添加失败', '该原因已存在');
+                    return;
+                }
+
+                // 创建新的原因对象
+                const newReason = {
+                    id: this.generateId(),
+                    name: reason,
+                    points: points
+                };
+
+                // 创建更新后的快捷选项
+                const updatedShortcuts = { ...this.shortcuts };
+                updatedShortcuts[`${type}Reasons`] = [...updatedShortcuts[`${type}Reasons`], newReason];
+
+                // 更新本地数据
+                this.shortcuts = updatedShortcuts;
+
+                // 保存到localStorage
+                this.saveData();
+
+                this.updateAdminUI();
+                this.hideAddReasonForm(type);
+                const displayPoints = Math.abs(points);
+                const sign = type === 'use' || points < 0 ? '-' : '+';
+                this.showNotification('success', '添加成功', `已添加新的原因选项：${reason} (${sign}${displayPoints}分)`);
+            }
+
+            // 编辑原因
+            editReason(type, index) {
+                const reason = this.shortcuts[`${type}Reasons`][index];
+                if (!reason) return;
+
+                // 显示编辑表单
+                document.getElementById(`add${type.charAt(0).toUpperCase() + type.slice(1)}ReasonForm`).classList.add('hidden');
+                document.getElementById(`edit${type.charAt(0).toUpperCase() + type.slice(1)}ReasonForm`).classList.remove('hidden');
+
+                // 填充表单数据
+                document.getElementById(`edit${type.charAt(0).toUpperCase() + type.slice(1)}Reason`).value = reason.name;
+                document.getElementById(`edit${type.charAt(0).toUpperCase() + type.slice(1)}Points`).value = reason.points;
+
+                // 保存当前编辑的索引
+                this.currentEditIndex = index;
+                this.currentEditType = type;
+            }
+
+            hideEditReasonForm(type, resetState = true) {
+                const form = document.getElementById(`edit${type.charAt(0).toUpperCase() + type.slice(1)}ReasonForm`);
+                if (form) {
+                    form.classList.add('hidden');
+                }
+
+                if (resetState && this.currentEditType === type) {
+                    this.currentEditIndex = null;
+                    this.currentEditType = null;
+                }
+            }
+
+            // 更新原因
+            updateReason() {
+                if (this.currentEditIndex === null || this.currentEditType === null) return;
+
+                const type = this.currentEditType;
+                const input = document.getElementById(`edit${type.charAt(0).toUpperCase() + type.slice(1)}Reason`);
+                const pointsInput = document.getElementById(`edit${type.charAt(0).toUpperCase() + type.slice(1)}Points`);
+                const reason = input.value.trim();
+                const points = parseInt(pointsInput.value) || 0;
+
+                if (!reason) {
+                    this.showNotification('error', '更新失败', '请输入原因内容');
+                    return;
+                }
+
+                if (type === 'earn' && (points < -100 || points > 100)) {
+                    this.showNotification('error', '更新失败', '发放积分必须在-100到100之间');
+                    return;
+                }
+
+                if (type === 'use' && (points < 1 || points > 100)) {
+                    this.showNotification('error', '更新失败', '扣减积分必须在1到100之间');
+                    return;
+                }
+
+                // 检查是否与其他原因重复
+                const otherReasons = this.shortcuts[`${this.currentEditType}Reasons`].filter((_, i) => i !== this.currentEditIndex);
+                if (otherReasons.some(r => r.name === reason)) {
+                    this.showNotification('error', '更新失败', '该原因已存在');
+                    return;
+                }
+
+                // 更新原因
+                const updatedShortcuts = { ...this.shortcuts };
+                updatedShortcuts[`${this.currentEditType}Reasons`][this.currentEditIndex] = {
+                    ...updatedShortcuts[`${this.currentEditType}Reasons`][this.currentEditIndex],
+                    name: reason,
+                    points: points
+                };
+
+                this.shortcuts = updatedShortcuts;
+                this.saveData();
+                this.updateAdminUI();
+
+                // 隐藏编辑表单
+                this.hideEditReasonForm(type);
+
+                const displayPoints = Math.abs(points);
+                const sign = type === 'use' || points < 0 ? '-' : '+';
+                this.showNotification('success', '更新成功', `已更新原因选项：${reason} (${sign}${displayPoints}分)`);
+            }
+
+            // 删除原因
+            deleteReason(type, index) {
+                // 创建更新后的快捷选项
+                const updatedShortcuts = { ...this.shortcuts };
+                updatedShortcuts[`${type}Reasons`] = updatedShortcuts[`${type}Reasons`].filter((_, i) => i !== index);
+
+                // 更新本地数据
+                this.shortcuts = updatedShortcuts;
+
+                // 保存到localStorage
+                this.saveData();
+
+                this.updateAdminUI();
+                this.showNotification('success', '删除成功', '已删除原因选项');
+            }
+
+            // 显示通知
+            showNotification(type, title, message) {
+                const notification = document.getElementById('notification');
+                const icon = document.getElementById('notificationIcon');
+                const titleElement = document.getElementById('notificationTitle');
+                const messageElement = document.getElementById('notificationMessage');
+
+                // 设置通知类型
+                let iconClass = 'fa-info-circle';
+                let borderClass = 'border-primary';
+
+                switch (type) {
+                    case 'success':
+                        iconClass = 'fa-check-circle';
+                        borderClass = 'border-green-500';
+                        icon.className = `flex-shrink-0 text-green-500 mr-3`;
+                        break;
+                    case 'error':
+                        iconClass = 'fa-exclamation-circle';
+                        borderClass = 'border-red-500';
+                        icon.className = `flex-shrink-0 text-red-500 mr-3`;
+                        break;
+                    case 'warning':
+                        iconClass = 'fa-exclamation-triangle';
+                        borderClass = 'border-yellow-500';
+                        icon.className = `flex-shrink-0 text-yellow-500 mr-3`;
+                        break;
+                    default:
+                        icon.className = `flex-shrink-0 text-primary mr-3`;
+                }
+
+                icon.innerHTML = `<i class="fa ${iconClass} text-xl"></i>`;
+                notification.querySelector('.border-l-4').className = `border-l-4 ${borderClass}`;
+
+                // 设置通知内容
+                titleElement.textContent = title;
+                messageElement.textContent = message;
+
+                // 显示通知
+                notification.classList.remove('translate-x-full');
+
+                // 自动隐藏通知
+                setTimeout(() => {
+                    this.hideNotification();
+                }, 5000);
+            }
+
+            // 隐藏通知
+            hideNotification() {
+                const notification = document.getElementById('notification');
+                notification.classList.add('translate-x-full');
+            }
+
+            // 模拟刷卡
+            simulateCardSwipe() {
+                const cardSwipeArea = document.getElementById('cardSwipeArea');
+                cardSwipeArea.classList.add('animate-swipe');
+
+                setTimeout(() => {
+                    cardSwipeArea.classList.remove('animate-swipe');
+
+                    // 如果有已登记的学员，随机取一个来模拟刷卡
+                    if (this.students && this.students.length > 0) {
+                        const randomStudent = this.students[Math.floor(Math.random() * this.students.length)];
+                        this.processCardSwipe(randomStudent.cardId);
+                    } else {
+                        // 无学员时生成随机卡号
+                        this.processCardSwipe(this.generateCardId());
+                    }
+                }, 1000);
+            }
+
+            // 处理刷卡
+            processCardSwipe(cardId) {
+                console.log('检测到卡号:', cardId);
+
+                // 检查是否有磁卡标签映射
+                const mappedCardId = this.cardTags[cardId] || cardId;
+
+                // 查找对应的学员
+                const student = this.students.find(s => s.cardId === mappedCardId);
+
+                if (student) {
+                    // 找到学员，显示学员信息
+                    this.currentStudentId = student.id;
+                    this.updateFrontDeskUI();
+                    this.showNotification('success', '识别成功', `欢迎回来，${student.name}！`);
+                } else {
+                    // 未找到学员，提示创建新学员
+                    this.showNotification('warning', '未找到学员', '未找到该卡号对应的学员，请先添加学员信息');
+
+                    // 如果在添加学员界面，自动填充卡号
+                    const cardIdInput = document.getElementById('newStudentCardId');
+                    if (cardIdInput) {
+                        cardIdInput.value = cardId;
+                    }
+                }
+            }
+
+            // 连接USB刷卡器
+            async connectUSBReader() {
+                try {
+                    const device = await navigator.usb.requestDevice({
+                        filters: [{
+                            classCode: 0xFF,
+                            subclassCode: 0x00,
+                            protocolCode: 0x00
+                        }]
+                    });
+
+                    await device.open();
+                    await device.selectConfiguration(1);
+                    await device.claimInterface(0);
+
+                    this.showNotification('success', '连接成功', 'USB刷卡器连接成功');
+                    console.log('USB刷卡器连接成功:', device);
+
+                    // 设置输入报告监听器
+                    device.addEventListener('inputreport', (event) => {
+                        const data = new Uint8Array(event.data.buffer);
+                        const cardId = Array.from(data).map(byte => byte.toString(16).padStart(2, '0')).join('');
+                        this.processCardSwipe(cardId);
+                    });
+
+                } catch (error) {
+                    console.error('USB刷卡器连接失败:', error);
+                    this.showNotification('error', '连接失败', '无法连接USB刷卡器，请检查设备连接');
+                }
+            }
+
+            // 处理USB设备连接
+            handleUSBConnect(event) {
+                console.log('USB设备已连接:', event.device);
+                this.showNotification('info', '设备连接', '检测到USB设备连接');
+            }
+
+            // 处理USB设备断开
+            handleUSBDisconnect(event) {
+                console.log('USB设备已断开:', event.device);
+                this.showNotification('info', '设备断开', 'USB设备已断开连接');
+            }
+
+            // 初始化键盘仿真刷卡器
+            initCardReader() {
+                document.addEventListener('keydown', (e) => {
+                    // 如果正在输入框中输入，不处理
+                    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+                        return;
+                    }
+
+                    // 忽略组合快捷键
+                    if (e.ctrlKey || e.altKey || e.metaKey) {
+                        return;
+                    }
+
+                    // 如果按下的是卡号字符
+                    if (this.cardReader.allowedChars.test(e.key)) {
+                        if (!this.cardReader.isReading) {
+                            this.cardReader.isReading = true;
+                            this.cardReader.cardData = '';
+                            this.cardReader.startTime = Date.now();
+                        }
+
+                        this.cardReader.cardData += e.key;
+
+                        // 刷卡器通常连续输出后停顿，这里用短超时自动收口
+                        this.resetCardReadTimer();
+                    } else if (this.cardReader.endKeys.includes(e.key)) {
+                        // 一些刷卡器会在末尾发送回车或Tab
+                        if (this.cardReader.isReading) {
+                            this.clearCardReadTimer();
+                            this.finishCardReading();
+                            e.preventDefault();
+                        }
+                    } else if (this.cardReader.isReading) {
+                        // 读取中遇到其他键，结束本次读取
+                        this.clearCardReadTimer();
+                        this.finishCardReading();
+                    }
+                });
+            }
+
+            resetCardReadTimer() {
+                this.clearCardReadTimer();
+                this.cardReader.readTimer = setTimeout(() => {
+                    if (this.cardReader.isReading) {
+                        this.finishCardReading();
+                    }
+                }, this.cardReader.readTimeout);
+            }
+
+            clearCardReadTimer() {
+                if (this.cardReader.readTimer) {
+                    clearTimeout(this.cardReader.readTimer);
+                    this.cardReader.readTimer = null;
+                }
+            }
+
+            // 完成卡号读取
+            finishCardReading() {
+                this.clearCardReadTimer();
+
+                const rawCardData = (this.cardReader.cardData || '').trim();
+                if (rawCardData.length >= this.cardReader.minLength) {
+                    let cardId = rawCardData;
+
+                    // 移除前缀和后缀
+                    if (this.cardReader.prefix && cardId.startsWith(this.cardReader.prefix)) {
+                        cardId = cardId.substring(this.cardReader.prefix.length);
+                    }
+
+                    if (this.cardReader.suffix && cardId.endsWith(this.cardReader.suffix)) {
+                        cardId = cardId.substring(0, cardId.length - this.cardReader.suffix.length);
+                    }
+
+                    this.processCardSwipe(cardId);
+                }
+
+                // 重置读卡器状态
+                this.cardReader.isReading = false;
+                this.cardReader.cardData = '';
+            }
+
+            // 执行打卡操作
+            async performCheckIn() {
+                if (!this.currentStudentId) {
+                    this.showNotification('error', '打卡失败', '请先刷卡识别学员');
+                    return;
+                }
+
+                const student = this.students.find(s => s.id === this.currentStudentId);
+                if (!student) return;
+
+                // 显示打卡状态
+                const checkInStatus = document.getElementById('checkInStatus');
+                const checkInButton = document.getElementById('checkInButton');
+                const checkInMessage = document.getElementById('checkInMessage');
+                const checkInProgress = document.getElementById('checkInProgress');
+
+                checkInStatus.classList.remove('hidden');
+                checkInButton.disabled = true;
+                checkInButton.classList.add('opacity-50', 'cursor-not-allowed');
+
+                checkInMessage.textContent = '正在准备打卡...';
+                checkInProgress.textContent = '初始化系统';
+
+                try {
+                    // 准备打卡数据
+                    const checkInData = {
+                        type: 'checkIn',
+                        timestamp: new Date().toISOString(),
+                        location: '前台',
+                        deviceId: this.getDeviceId()
+                    };
+
+                    // 模拟打卡过程
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    checkInMessage.textContent = '正在向磁卡写入数据...';
+                    checkInProgress.textContent = '写入学员信息';
+
+                    // 模拟写入进度
+                    let progress = 0;
+                    const progressInterval = setInterval(() => {
+                        progress += 10;
+                        checkInProgress.textContent = `写入进度: ${progress}%`;
+
+                        if (progress >= 100) {
+                            clearInterval(progressInterval);
+
+                            // 执行实际的磁卡写入
+                            this.writeToCard(student, checkInData).then(writeResult => {
+                                if (writeResult.success) {
+                                    checkInMessage.textContent = '正在读取磁卡数据...';
+                                    checkInProgress.textContent = '验证写入结果';
+
+                                    // 读取卡片数据进行验证
+                                    setTimeout(() => {
+                                        this.readFromCard(student.cardId).then(cardData => {
+                                            if (cardData) {
+                                                console.log('磁卡数据验证成功:', cardData);
+                                            }
+
+                                            // 完成打卡
+                                            this.completeCheckIn(student);
+
+                                            // 恢复按钮状态
+                                            checkInStatus.classList.add('hidden');
+                                            checkInButton.disabled = false;
+                                            checkInButton.classList.remove('opacity-50', 'cursor-not-allowed');
+                                        });
+                                    }, 1000);
+                                } else {
+                                    // 写入失败但仍完成打卡（降级处理）
+                                    this.showNotification('warning', '写入提示', writeResult.message || '磁卡写入遇到问题，将使用系统记录');
+
+                                    setTimeout(() => {
+                                        this.completeCheckIn(student);
+
+                                        // 恢复按钮状态
+                                        checkInStatus.classList.add('hidden');
+                                        checkInButton.disabled = false;
+                                        checkInButton.classList.remove('opacity-50', 'cursor-not-allowed');
+                                    }, 1000);
+                                }
+                            });
+                        }
+                    }, 200);
+                } catch (error) {
+                    console.error('打卡过程出错:', error);
+                    this.showNotification('error', '打卡失败', '打卡过程中出现错误，请重试');
+
+                    // 恢复按钮状态
+                    checkInStatus.classList.add('hidden');
+                    checkInButton.disabled = false;
+                    checkInButton.classList.remove('opacity-50', 'cursor-not-allowed');
+                }
+            }
+
+            // 完成打卡
+            completeCheckIn(student) {
+                const now = new Date();
+                const checkInTime = now.toISOString();
+                const formattedDate = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日`;
+                const formattedTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+
+                // 创建打卡记录
+                const checkInRecord = {
+                    id: this.generateId(),
+                    studentId: student.id,
+                    studentName: student.name,
+                    cardId: student.cardId,
+                    checkInTime: checkInTime,
+                    formattedDate: formattedDate,
+                    formattedTime: formattedTime,
+                    pointsEarned: 1 // 打卡获得1积分
+                };
+
+                // 添加到打卡记录
+                this.checkInRecords.unshift(checkInRecord);
+
+                // 限制记录数量
+                if (this.checkInRecords.length > 50) {
+                    this.checkInRecords = this.checkInRecords.slice(0, 50);
+                }
+
+                // 增加积分
+                const pointsDiff = 1;
+                const transaction = {
+                    id: this.generateId(),
+                    studentId: student.id,
+                    type: 'earn',
+                    points: pointsDiff,
+                    reason: '打卡签到奖励',
+                    date: checkInTime
+                };
+
+                // 更新学员积分
+                const studentIndex = this.students.findIndex(s => s.id === student.id);
+                if (studentIndex !== -1) {
+                    this.students[studentIndex].points += pointsDiff;
+                }
+
+                // 添加积分记录
+                this.transactions.push(transaction);
+                this.pendingTransactions.push({ ...transaction, _pointsDelta: pointsDiff });
+
+                // 保存数据
+                this.saveData();
+
+                // 更新UI
+                this.updateFrontDeskUI();
+                this.updateCheckInRecords();
+
+                // 显示成功消息
+                this.showNotification('success', '打卡成功', `${student.name} 打卡成功，获得1积分！`);
+            }
+
+            // 生成唯一ID
+            generateId() {
+                return Date.now().toString(36) + Math.random().toString(36).substr(2);
+            }
+
+            // 生成卡号
+            generateCardId() {
+                return 'C' + Math.random().toString().substr(2, 8);
+            }
+
+            // 获取设备ID
+            getDeviceId() {
+                let deviceId = localStorage.getItem('orangeHeart_deviceId');
+                if (!deviceId) {
+                    deviceId = 'device_' + Math.random().toString(36).substr(2, 9);
+                    localStorage.setItem('orangeHeart_deviceId', deviceId);
+                }
+                return deviceId;
+            }
+        }
+    </script>
+</body>
+
+</html>

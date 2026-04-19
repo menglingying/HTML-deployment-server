@@ -1,0 +1,17 @@
+node_modules/
+data/
+*.log
+服务器
+.cursor/
+.claude/
+.playwright-mcp/
+.windsurf-ai-dialog.port
+cookies*.txt
+headers.txt
+temp/
+temp_*.py
+temp_*.txt
+*.jpg
+*.png
+artifacts_verify/
+docs/
