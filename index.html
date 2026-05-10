@@ -243,6 +243,22 @@
                             class="px-1 py-3 border-b-2 border-transparent text-gray-500 hover:text-primary hover:border-primary transition-colors">
                             <i class="fa fa-list mr-2"></i>快捷选项管理
                         </button>
+                        <button class="admin-tab" data-tab="backups"
+                            class="px-1 py-3 border-b-2 border-transparent text-gray-500 hover:text-primary hover:border-primary transition-colors">
+                            <i class="fa fa-database mr-2"></i>数据存档
+                        </button>
+                        <button class="admin-tab" data-tab="dailyLog"
+                            class="px-1 py-3 border-b-2 border-transparent text-gray-500 hover:text-primary hover:border-primary transition-colors">
+                            <i class="fa fa-calendar mr-2"></i>积分日志
+                        </button>
+                        <button class="admin-tab" data-tab="auditLog"
+                            class="px-1 py-3 border-b-2 border-transparent text-gray-500 hover:text-primary hover:border-primary transition-colors">
+                            <i class="fa fa-history mr-2"></i>变动记录
+                        </button>
+                        <button class="admin-tab" data-tab="batchRestore"
+                            class="px-1 py-3 border-b-2 border-transparent text-gray-500 hover:text-primary hover:border-primary transition-colors">
+                            <i class="fa fa-undo mr-2"></i>批量恢复
+                        </button>
                     </nav>
                 </div>
 
@@ -523,6 +539,134 @@
                         </div>
                     </div>
                 </div>
+
+                <div id="backupsTab" class="admin-tab-content hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-semibold text-gray-800">数据存档管理</h3>
+                        <div class="flex space-x-2">
+                            <button id="createSnapshotBtn"
+                                class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-opacity-90 transition-colors text-sm flex items-center">
+                                <i class="fa fa-save mr-2"></i>手动存档
+                            </button>
+                            <button id="refreshBackupsBtn"
+                                class="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-opacity-90 transition-colors text-sm flex items-center">
+                                <i class="fa fa-refresh mr-2"></i>刷新
+                            </button>
+                        </div>
+                    </div>
+                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                        <p class="text-yellow-800 text-sm"><i class="fa fa-info-circle mr-1"></i>系统每次数据变更时自动备份。如果发现积分异常，可以选择一个时间点恢复数据。手动存档可在重要操作前保存当前状态。</p>
+                    </div>
+                    <div id="backupsList" class="space-y-3">
+                        <p class="text-gray-500 text-center py-8">加载中...</p>
+                    </div>
+                </div>
+
+                <div id="dailyLogTab" class="admin-tab-content hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-semibold text-gray-800">每日积分日志</h3>
+                        <div class="flex space-x-2">
+                            <button id="saveDailyLogBtn"
+                                class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-opacity-90 transition-colors text-sm flex items-center">
+                                <i class="fa fa-save mr-2"></i>立即记录今日积分
+                            </button>
+                            <button id="refreshDailyLogBtn"
+                                class="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-opacity-90 transition-colors text-sm flex items-center">
+                                <i class="fa fa-refresh mr-2"></i>刷新
+                            </button>
+                        </div>
+                    </div>
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                        <p class="text-blue-800 text-sm"><i class="fa fa-info-circle mr-1"></i>系统每天自动记录所有学员的积分快照。点击某一天可查看当天每位学员的具体积分和变动情况。</p>
+                    </div>
+                    <div id="dailyLogList" class="space-y-3">
+                        <p class="text-gray-500 text-center py-8">加载中...</p>
+                    </div>
+                    <div id="dailyLogDetail" class="hidden mt-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 id="dailyLogDetailTitle" class="text-lg font-semibold text-gray-800"></h4>
+                            <button id="closeDailyLogDetail" class="text-gray-500 hover:text-gray-700 text-sm">
+                                <i class="fa fa-times mr-1"></i>关闭
+                            </button>
+                        </div>
+                        <div id="dailyLogDetailContent" class="space-y-2"></div>
+                    </div>
+                </div>
+
+                <!-- 审计日志（逐笔变动记录）选项卡 -->
+                <div id="auditLogTab" class="admin-tab-content hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-semibold text-gray-800">逐笔积分变动记录</h3>
+                        <div class="flex space-x-2">
+                            <select id="auditLogDateSelect" class="border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                                <option value="">选择日期</option>
+                            </select>
+                            <input type="text" id="auditLogStudentFilter" placeholder="按学员名搜索..."
+                                class="border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary w-40">
+                            <button id="refreshAuditLogBtn"
+                                class="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-opacity-90 transition-colors text-sm flex items-center">
+                                <i class="fa fa-refresh mr-2"></i>刷新
+                            </button>
+                        </div>
+                    </div>
+                    <div class="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-4">
+                        <p class="text-purple-800 text-sm"><i class="fa fa-info-circle mr-1"></i>每次积分变动（加分、扣分、恢复等）都会自动记录在此。可按日期和学员筛选查看。</p>
+                    </div>
+                    <div id="auditLogEntries" class="space-y-2">
+                        <p class="text-gray-500 text-center py-8">请选择日期查看变动记录</p>
+                    </div>
+                </div>
+
+                <!-- 批量积分恢复选项卡 -->
+                <div id="batchRestoreTab" class="admin-tab-content hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-semibold text-gray-800">批量积分恢复</h3>
+                    </div>
+                    <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                        <p class="text-red-800 text-sm"><i class="fa fa-exclamation-triangle mr-1"></i>此功能用于批量恢复学员积分到某个历史时间点。操作不可撤销，请谨慎使用。系统会在恢复前自动创建存档。</p>
+                    </div>
+
+                    <div class="bg-white rounded-lg border p-6 mb-6">
+                        <h4 class="font-semibold text-gray-700 mb-4">步骤一：选择恢复来源</h4>
+                        <div class="flex items-center space-x-4 mb-4">
+                            <label class="text-sm text-gray-600">恢复到日期：</label>
+                            <select id="batchRestoreDate" class="border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                                <option value="">请选择日期</option>
+                            </select>
+                            <button id="batchRestorePreviewBtn"
+                                class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-opacity-90 transition-colors text-sm">
+                                <i class="fa fa-eye mr-2"></i>预览差异
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="batchRestorePreview" class="hidden">
+                        <div class="bg-white rounded-lg border p-6 mb-6">
+                            <h4 class="font-semibold text-gray-700 mb-4">步骤二：确认恢复内容</h4>
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="flex items-center space-x-4">
+                                    <label class="flex items-center text-sm">
+                                        <input type="checkbox" id="batchRestoreSelectAll" class="mr-2">
+                                        <span>全选</span>
+                                    </label>
+                                    <span id="batchRestoreSelectedCount" class="text-sm text-gray-500">已选: 0</span>
+                                </div>
+                                <button id="batchRestoreExecuteBtn"
+                                    class="bg-red-600 text-white px-6 py-2 rounded-md hover:bg-opacity-90 transition-colors text-sm font-semibold">
+                                    <i class="fa fa-undo mr-2"></i>执行恢复
+                                </button>
+                            </div>
+                            <div id="batchRestoreDiffList" class="space-y-2 max-h-96 overflow-y-auto"></div>
+                        </div>
+                    </div>
+
+                    <div id="batchRestoreResult" class="hidden">
+                        <div class="bg-green-50 border border-green-200 rounded-lg p-6">
+                            <h4 class="font-semibold text-green-800 mb-2"><i class="fa fa-check-circle mr-2"></i>恢复完成</h4>
+                            <div id="batchRestoreResultContent" class="text-sm text-green-700"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
     </main>
@@ -665,10 +809,12 @@
     <script>
         // 全局变量
         let pointsSystem;
+        let app;
 
         // 页面加载完成后初始化
         document.addEventListener('DOMContentLoaded', () => {
             pointsSystem = new PointsSystem();
+            app = pointsSystem;
         });
 
         // 积分系统主类
@@ -922,6 +1068,33 @@
                     : {};
                 this.checkInRecords = Array.isArray(snapshot.checkInRecords) ? snapshot.checkInRecords : [];
                 this.ensureShortcutDefaults();
+                this.recalcStudentPoints();
+            }
+
+            recalcStudentPoints() {
+                const pointsMap = {};
+                for (const t of this.transactions) {
+                    if (!t.studentId) continue;
+                    if (!pointsMap[t.studentId]) pointsMap[t.studentId] = 0;
+                    const pts = Number(t.points) || 0;
+                    if (t.type === 'use' || t.type === 'deduct') {
+                        pointsMap[t.studentId] -= pts;
+                    } else {
+                        pointsMap[t.studentId] += pts;
+                    }
+                }
+                let corrected = 0;
+                for (const s of this.students) {
+                    const calc = pointsMap[s.id] || 0;
+                    if (s.points !== calc) {
+                        console.warn(`积分校正: ${s.name} ${s.points} → ${calc}`);
+                        s.points = calc;
+                        corrected++;
+                    }
+                }
+                if (corrected > 0) {
+                    console.log(`积分校正完成: ${corrected} 名学员积分已从交易记录重算`);
+                }
             }
 
             loadLocalDataCache() {
@@ -1017,10 +1190,56 @@
                 }
             }
 
+            mergeTransactionsFromServer(serverData) {
+                if (!serverData || typeof serverData !== 'object') return;
+
+                const serverTxns = Array.isArray(serverData.transactions) ? serverData.transactions : [];
+                const localTxnIds = new Set(this.transactions.map(t => t.id));
+                let added = 0;
+                for (const st of serverTxns) {
+                    if (!localTxnIds.has(st.id)) {
+                        this.transactions.push(st);
+                        added++;
+                    }
+                }
+
+                const serverStudents = Array.isArray(serverData.students) ? serverData.students : [];
+                const localStudentIds = new Set(this.students.map(s => s.id));
+                for (const ss of serverStudents) {
+                    if (!localStudentIds.has(ss.id)) {
+                        this.students.push(ss);
+                    }
+                }
+
+                if (serverData.shortcuts &&
+                    Array.isArray(serverData.shortcuts.earnReasons) &&
+                    Array.isArray(serverData.shortcuts.useReasons)) {
+                    this.shortcuts = serverData.shortcuts;
+                }
+                if (serverData.cardTags && typeof serverData.cardTags === 'object') {
+                    this.cardTags = { ...this.cardTags, ...serverData.cardTags };
+                }
+                if (Array.isArray(serverData.checkInRecords)) {
+                    const localRecIds = new Set(this.checkInRecords.map(r => r.id || `${r.studentId}_${r.date}`));
+                    for (const sr of serverData.checkInRecords) {
+                        const key = sr.id || `${sr.studentId}_${sr.date}`;
+                        if (!localRecIds.has(key)) {
+                            this.checkInRecords.push(sr);
+                        }
+                    }
+                }
+
+                this.recalcStudentPoints();
+                if (added > 0) {
+                    console.log(`从服务器合并 ${added} 条新交易记录`);
+                }
+            }
+
             mergeServerDataWithPending(serverData) {
                 this.applyStateSnapshot(serverData);
 
                 const pending = this.pendingTransactions.slice();
+                let replayed = 0;
                 for (const pt of pending) {
                     const existsInServer = this.transactions.some(t => t.id === pt.id);
                     if (existsInServer) {
@@ -1030,13 +1249,13 @@
                         id: pt.id, studentId: pt.studentId, type: pt.type,
                         points: pt.points, reason: pt.reason, date: pt.date
                     });
-                    const si = this.students.findIndex(s => s.id === pt.studentId);
-                    if (si !== -1) {
-                        this.students[si].points += pt._pointsDelta;
-                    }
+                    replayed++;
                 }
 
-                console.log(`合并完成: 重放 ${pending.length} 条本地待同步事务`);
+                if (replayed > 0) {
+                    this.recalcStudentPoints();
+                }
+                console.log(`合并完成: 重放 ${replayed}/${pending.length} 条本地待同步事务`);
             }
 
             async syncDataToCloud() {
@@ -1750,6 +1969,53 @@
                     this.hideAddReasonForm('use');
                 });
 
+                document.getElementById('createSnapshotBtn').addEventListener('click', () => {
+                    this.createSnapshot();
+                });
+                document.getElementById('refreshBackupsBtn').addEventListener('click', () => {
+                    this.loadBackupsList();
+                });
+                document.getElementById('saveDailyLogBtn').addEventListener('click', () => {
+                    this.saveDailyLogNow();
+                });
+                document.getElementById('refreshDailyLogBtn').addEventListener('click', () => {
+                    this.loadDailyLogList();
+                });
+                document.getElementById('closeDailyLogDetail').addEventListener('click', () => {
+                    document.getElementById('dailyLogDetail').classList.add('hidden');
+                });
+
+                // 审计日志事件
+                document.getElementById('refreshAuditLogBtn').addEventListener('click', () => {
+                    this.loadAuditLogDates();
+                });
+                document.getElementById('auditLogDateSelect').addEventListener('change', (e) => {
+                    this.loadAuditLogEntries(e.target.value);
+                });
+                document.getElementById('auditLogStudentFilter').addEventListener('input', () => {
+                    const date = document.getElementById('auditLogDateSelect').value;
+                    if (date) this.loadAuditLogEntries(date);
+                });
+
+                // 批量恢复事件
+                document.getElementById('batchRestorePreviewBtn').addEventListener('click', () => {
+                    this.previewBatchRestore();
+                });
+                document.getElementById('batchRestoreSelectAll').addEventListener('change', (e) => {
+                    document.querySelectorAll('.batch-restore-checkbox').forEach(cb => {
+                        cb.checked = e.target.checked;
+                    });
+                    this.updateBatchRestoreCount();
+                });
+                document.getElementById('batchRestoreExecuteBtn').addEventListener('click', () => {
+                    this.executeBatchRestore();
+                });
+                document.getElementById('batchRestoreDiffList').addEventListener('change', (e) => {
+                    if (e.target.classList.contains('batch-restore-checkbox')) {
+                        this.updateBatchRestoreCount();
+                    }
+                });
+
                 // 关闭通知
                 document.getElementById('closeNotification').addEventListener('click', () => {
                     this.hideNotification();
@@ -2230,6 +2496,392 @@
                 document.querySelector(`[data-tab="${tabId}"]`).classList.add('border-primary', 'text-primary');
 
                 this.currentAdminTab = tabId;
+                if (tabId === 'backups') {
+                    this.loadBackupsList();
+                } else if (tabId === 'dailyLog') {
+                    this.loadDailyLogList();
+                } else if (tabId === 'auditLog') {
+                    this.loadAuditLogDates();
+                } else if (tabId === 'batchRestore') {
+                    this.loadBatchRestoreDates();
+                }
+            }
+
+            async loadBackupsList() {
+                const container = document.getElementById('backupsList');
+                container.innerHTML = '<p class="text-gray-500 text-center py-4">加载中...</p>';
+                try {
+                    const resp = await fetch(`${this.apiBase}/backups`, { cache: 'no-store' });
+                    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                    const { backups } = await resp.json();
+                    if (!backups || backups.length === 0) {
+                        container.innerHTML = '<p class="text-gray-500 text-center py-8">暂无存档记录</p>';
+                        return;
+                    }
+                    container.innerHTML = backups.map(b => {
+                        const d = new Date(b.mtime);
+                        const timeStr = `${d.getFullYear()}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getDate().toString().padStart(2,'0')} ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}:${d.getSeconds().toString().padStart(2,'0')}`;
+                        const sizeKB = (b.size / 1024).toFixed(1);
+                        const badge = b.isManual
+                            ? '<span class="bg-green-100 text-green-700 px-2 py-0.5 rounded text-xs ml-2">手动</span>'
+                            : '<span class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-xs ml-2">自动</span>';
+                        return `<div class="flex items-center justify-between bg-gray-50 p-4 rounded-lg border">
+                            <div>
+                                <div class="font-medium text-gray-800">${timeStr}${badge}</div>
+                                <div class="text-sm text-gray-500 mt-1">${b.studentCount} 名学员 · ${b.txnCount} 条记录 · ${sizeKB}KB</div>
+                            </div>
+                            <button onclick="app.restoreBackup('${b.name}')"
+                                class="bg-blue-600 text-white px-3 py-1.5 rounded-md hover:bg-blue-700 transition-colors text-sm">
+                                <i class="fa fa-undo mr-1"></i>恢复
+                            </button>
+                        </div>`;
+                    }).join('');
+                } catch (err) {
+                    container.innerHTML = `<p class="text-red-500 text-center py-4">加载失败: ${err.message}</p>`;
+                }
+            }
+
+            async createSnapshot() {
+                try {
+                    const resp = await fetch(`${this.apiBase}/snapshot`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ label: 'manual' })
+                    });
+                    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                    const result = await resp.json();
+                    this.showNotification('success', '存档成功', `已保存当前数据快照 (版本 ${result.version})`);
+                    this.loadBackupsList();
+                } catch (err) {
+                    this.showNotification('error', '存档失败', err.message);
+                }
+            }
+
+            async restoreBackup(filename) {
+                if (!confirm(`确定要恢复到此存档吗？当前数据将被替换。\n\n文件: ${filename}`)) return;
+                try {
+                    await this.createSnapshot();
+                    const resp = await fetch(`${this.apiBase}/restore/${encodeURIComponent(filename)}`, { method: 'POST' });
+                    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                    const result = await resp.json();
+                    this.cloudVersion = result.version;
+                    await this.loadDataFromCloudBase(false);
+                    this.showNotification('success', '恢复成功', `已恢复数据，当前版本 ${result.version}`);
+                    this.loadBackupsList();
+                } catch (err) {
+                    this.showNotification('error', '恢复失败', err.message);
+                }
+            }
+
+            async loadDailyLogList() {
+                const container = document.getElementById('dailyLogList');
+                container.innerHTML = '<p class="text-gray-500 text-center py-4">加载中...</p>';
+                document.getElementById('dailyLogDetail').classList.add('hidden');
+                try {
+                    const resp = await fetch(`${this.apiBase}/daily-logs`);
+                    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                    const { logs } = await resp.json();
+                    if (!logs || logs.length === 0) {
+                        container.innerHTML = '<p class="text-gray-500 text-center py-8">暂无日志记录。系统每天自动记录，也可点击上方按钮立即记录。</p>';
+                        return;
+                    }
+                    container.innerHTML = logs.map(log => {
+                        const dateStr = log.date;
+                        const d = new Date(log.createdAt);
+                        const timeStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+                        return `<div class="bg-white border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer" onclick="app.viewDailyLog('${dateStr}')">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <span class="text-lg font-semibold text-gray-800"><i class="fa fa-calendar-o mr-2 text-blue-500"></i>${dateStr}</span>
+                                    <span class="text-gray-500 text-sm ml-4">记录时间: ${timeStr}</span>
+                                </div>
+                                <div class="flex space-x-4 text-sm">
+                                    <span class="text-blue-600"><i class="fa fa-users mr-1"></i>${log.studentCount} 名学员</span>
+                                    <span class="text-green-600"><i class="fa fa-exchange mr-1"></i>${log.transactionCount} 条当日记录</span>
+                                    <span class="text-gray-400 text-xs">v${log.version}</span>
+                                </div>
+                            </div>
+                        </div>`;
+                    }).join('');
+                } catch (err) {
+                    container.innerHTML = `<p class="text-red-500 text-center py-8">加载失败: ${err.message}</p>`;
+                }
+            }
+
+            async viewDailyLog(date) {
+                const detailDiv = document.getElementById('dailyLogDetail');
+                const titleEl = document.getElementById('dailyLogDetailTitle');
+                const contentEl = document.getElementById('dailyLogDetailContent');
+                detailDiv.classList.remove('hidden');
+                titleEl.textContent = `${date} 积分详情`;
+                contentEl.innerHTML = '<p class="text-gray-500 text-center py-4">加载中...</p>';
+                try {
+                    const resp = await fetch(`${this.apiBase}/daily-logs/${date}`);
+                    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                    const log = await resp.json();
+
+                    let html = '<div class="overflow-x-auto"><table class="w-full text-sm"><thead><tr class="bg-gray-100">';
+                    html += '<th class="px-4 py-2 text-left">学员</th>';
+                    html += '<th class="px-4 py-2 text-right">积分</th>';
+                    html += '<th class="px-4 py-2 text-left">卡号</th>';
+                    html += '</tr></thead><tbody>';
+
+                    const sorted = (log.students || []).slice().sort((a, b) => b.points - a.points);
+                    for (const s of sorted) {
+                        const pointColor = s.points >= 0 ? 'text-green-600' : 'text-red-600';
+                        html += `<tr class="border-b hover:bg-gray-50">
+                            <td class="px-4 py-2 font-medium">${s.name}</td>
+                            <td class="px-4 py-2 text-right ${pointColor} font-semibold">${s.points}</td>
+                            <td class="px-4 py-2 text-gray-500">${s.cardId || '-'}</td>
+                        </tr>`;
+                    }
+                    html += '</tbody></table></div>';
+
+                    if (log.todayTransactions && log.todayTransactions.length > 0) {
+                        html += '<h5 class="text-md font-semibold text-gray-700 mt-6 mb-3"><i class="fa fa-list mr-2"></i>当日交易记录</h5>';
+                        html += '<div class="overflow-x-auto"><table class="w-full text-sm"><thead><tr class="bg-gray-100">';
+                        html += '<th class="px-4 py-2 text-left">学员</th>';
+                        html += '<th class="px-4 py-2 text-left">类型</th>';
+                        html += '<th class="px-4 py-2 text-right">积分</th>';
+                        html += '<th class="px-4 py-2 text-left">原因</th>';
+                        html += '<th class="px-4 py-2 text-left">时间</th>';
+                        html += '</tr></thead><tbody>';
+                        for (const t of log.todayTransactions) {
+                            const studentName = (log.students || []).find(s => s.id === t.studentId)?.name || t.studentId;
+                            const typeLabel = t.type === 'earn' ? '获得' : (t.type === 'use' ? '使用' : (t.type === 'deduct' ? '扣除' : t.type));
+                            const typeColor = t.type === 'earn' ? 'text-green-600' : 'text-red-600';
+                            const sign = t.type === 'earn' ? '+' : '-';
+                            html += `<tr class="border-b hover:bg-gray-50">
+                                <td class="px-4 py-2">${studentName}</td>
+                                <td class="px-4 py-2 ${typeColor}">${typeLabel}</td>
+                                <td class="px-4 py-2 text-right ${typeColor} font-semibold">${sign}${t.points}</td>
+                                <td class="px-4 py-2 text-gray-600">${t.reason || '-'}</td>
+                                <td class="px-4 py-2 text-gray-500 text-xs">${t.date || '-'}</td>
+                            </tr>`;
+                        }
+                        html += '</tbody></table></div>';
+                    }
+
+                    contentEl.innerHTML = html;
+                } catch (err) {
+                    contentEl.innerHTML = `<p class="text-red-500 text-center py-4">加载失败: ${err.message}</p>`;
+                }
+            }
+
+            async saveDailyLogNow() {
+                try {
+                    const resp = await fetch(`${this.apiBase}/daily-logs/save-now`, { method: 'POST' });
+                    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                    const result = await resp.json();
+                    this.showNotification('success', '记录成功', `已保存 ${result.date} 的积分快照`);
+                    this.loadDailyLogList();
+                } catch (err) {
+                    this.showNotification('error', '记录失败', err.message);
+                }
+            }
+
+            // ========== 审计日志功能 ==========
+
+            async loadAuditLogDates() {
+                try {
+                    const resp = await fetch(`${this.apiBase}/audit-logs`, { cache: 'no-store' });
+                    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                    const { logs } = await resp.json();
+                    const select = document.getElementById('auditLogDateSelect');
+                    select.innerHTML = '<option value="">选择日期</option>';
+                    for (const log of logs) {
+                        const opt = document.createElement('option');
+                        opt.value = log.date;
+                        opt.textContent = log.date;
+                        select.appendChild(opt);
+                    }
+                    if (logs.length > 0) {
+                        select.value = logs[0].date;
+                        this.loadAuditLogEntries(logs[0].date);
+                    }
+                } catch (err) {
+                    console.error('加载审计日志日期失败:', err);
+                }
+            }
+
+            async loadAuditLogEntries(date) {
+                if (!date) return;
+                const container = document.getElementById('auditLogEntries');
+                container.innerHTML = '<p class="text-gray-500 text-center py-4">加载中...</p>';
+                try {
+                    const resp = await fetch(`${this.apiBase}/audit-logs/${date}`, { cache: 'no-store' });
+                    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                    const { entries, total } = await resp.json();
+
+                    const filter = (document.getElementById('auditLogStudentFilter').value || '').trim().toLowerCase();
+                    let filtered = entries;
+                    if (filter) {
+                        filtered = entries.filter(e => (e.studentName || '').toLowerCase().includes(filter));
+                    }
+
+                    if (filtered.length === 0) {
+                        container.innerHTML = '<p class="text-gray-500 text-center py-8">该日期暂无变动记录</p>';
+                        return;
+                    }
+
+                    container.innerHTML = `
+                        <div class="text-sm text-gray-500 mb-3">共 ${total} 条记录${filter ? `，筛选后 ${filtered.length} 条` : ''}</div>
+                        ${filtered.slice(0, 200).map(e => {
+                            const time = e.timestamp ? new Date(e.timestamp).toLocaleTimeString('zh-CN') : '';
+                            const deltaColor = e.delta > 0 ? 'text-green-600' : 'text-red-600';
+                            const deltaSign = e.delta > 0 ? '+' : '';
+                            const typeLabel = { earn: '加分', use: '扣分', new_student: '新学员', student_removed: '删除学员', batch_restore: '批量恢复' }[e.type] || e.type;
+                            return `<div class="bg-white rounded-lg border p-3 flex items-center justify-between">
+                                <div class="flex items-center space-x-3">
+                                    <span class="text-xs text-gray-400 w-16">${time}</span>
+                                    <span class="font-medium text-gray-800">${e.studentName || '未知'}</span>
+                                    <span class="text-xs px-2 py-0.5 rounded-full ${e.delta > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">${typeLabel}</span>
+                                </div>
+                                <div class="flex items-center space-x-3">
+                                    <span class="text-sm text-gray-500">${e.before} → ${e.after}</span>
+                                    <span class="font-bold ${deltaColor}">${deltaSign}${e.delta}</span>
+                                </div>
+                            </div>`;
+                        }).join('')}
+                        ${filtered.length > 200 ? `<p class="text-gray-400 text-center text-sm py-2">仅显示前200条</p>` : ''}
+                    `;
+                } catch (err) {
+                    container.innerHTML = `<p class="text-red-500 text-center py-4">加载失败: ${err.message}</p>`;
+                }
+            }
+
+            // ========== 批量积分恢复功能 ==========
+
+            async loadBatchRestoreDates() {
+                try {
+                    const resp = await fetch(`${this.apiBase}/daily-logs`, { cache: 'no-store' });
+                    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                    const { logs } = await resp.json();
+                    const select = document.getElementById('batchRestoreDate');
+                    select.innerHTML = '<option value="">请选择日期</option>';
+                    for (const log of logs) {
+                        const opt = document.createElement('option');
+                        opt.value = log.date;
+                        opt.textContent = `${log.date} (${log.studentCount}名学员)`;
+                        select.appendChild(opt);
+                    }
+                } catch (err) {
+                    console.error('加载恢复日期失败:', err);
+                }
+            }
+
+            async previewBatchRestore() {
+                const date = document.getElementById('batchRestoreDate').value;
+                if (!date) {
+                    this.showNotification('warning', '请选择日期', '请先选择一个要恢复到的日期');
+                    return;
+                }
+
+                try {
+                    const logResp = await fetch(`${this.apiBase}/daily-logs/${date}`, { cache: 'no-store' });
+                    if (!logResp.ok) throw new Error(`该日期没有日志记录`);
+                    const logData = await logResp.json();
+                    const logStudents = logData.students || [];
+
+                    const currentStudents = this.students;
+                    const logMap = new Map(logStudents.map(s => [s.id, s]));
+                    const diffs = [];
+
+                    for (const curr of currentStudents) {
+                        const old = logMap.get(curr.id);
+                        if (old && old.points !== curr.points) {
+                            diffs.push({
+                                studentId: curr.id,
+                                name: curr.name,
+                                currentPoints: curr.points,
+                                targetPoints: old.points,
+                                delta: old.points - curr.points
+                            });
+                        }
+                    }
+
+                    if (diffs.length === 0) {
+                        this.showNotification('info', '无需恢复', '所有学员积分与该日期一致，无需恢复');
+                        return;
+                    }
+
+                    this._batchRestoreDiffs = diffs;
+                    const container = document.getElementById('batchRestoreDiffList');
+                    container.innerHTML = diffs.map((d, i) => `
+                        <div class="bg-white rounded-lg border p-3 flex items-center justify-between">
+                            <label class="flex items-center space-x-3 flex-1">
+                                <input type="checkbox" class="batch-restore-checkbox" data-index="${i}" checked>
+                                <span class="font-medium text-gray-800">${d.name}</span>
+                            </label>
+                            <div class="flex items-center space-x-3">
+                                <span class="text-sm text-gray-500">当前 ${d.currentPoints}</span>
+                                <span class="text-gray-400">→</span>
+                                <span class="text-sm font-semibold ${d.delta > 0 ? 'text-green-600' : 'text-red-600'}">恢复到 ${d.targetPoints}</span>
+                                <span class="text-xs ${d.delta > 0 ? 'text-green-500' : 'text-red-500'}">(${d.delta > 0 ? '+' : ''}${d.delta})</span>
+                            </div>
+                        </div>
+                    `).join('');
+
+                    document.getElementById('batchRestorePreview').classList.remove('hidden');
+                    document.getElementById('batchRestoreResult').classList.add('hidden');
+                    document.getElementById('batchRestoreSelectAll').checked = true;
+                    this.updateBatchRestoreCount();
+                } catch (err) {
+                    this.showNotification('error', '预览失败', err.message);
+                }
+            }
+
+            updateBatchRestoreCount() {
+                const checked = document.querySelectorAll('.batch-restore-checkbox:checked').length;
+                document.getElementById('batchRestoreSelectedCount').textContent = `已选: ${checked}`;
+            }
+
+            async executeBatchRestore() {
+                const checkboxes = document.querySelectorAll('.batch-restore-checkbox:checked');
+                if (checkboxes.length === 0) {
+                    this.showNotification('warning', '未选择学员', '请至少选择一名学员进行恢复');
+                    return;
+                }
+
+                const selectedIndices = Array.from(checkboxes).map(cb => parseInt(cb.dataset.index));
+                const restorations = selectedIndices.map(i => ({
+                    studentId: this._batchRestoreDiffs[i].studentId,
+                    targetPoints: this._batchRestoreDiffs[i].targetPoints
+                }));
+
+                if (!confirm(`确定要恢复 ${restorations.length} 名学员的积分吗？\n系统会先自动存档当前数据。`)) return;
+
+                try {
+                    await fetch(`${this.apiBase}/snapshot`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ label: '批量恢复前自动存档' })
+                    });
+
+                    const resp = await fetch(`${this.apiBase}/batch-restore`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ restorations })
+                    });
+
+                    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                    const result = await resp.json();
+
+                    this.cloudVersion = result.version;
+                    await this.loadDataFromCloudBase(false);
+
+                    document.getElementById('batchRestorePreview').classList.add('hidden');
+                    document.getElementById('batchRestoreResult').classList.remove('hidden');
+                    document.getElementById('batchRestoreResultContent').innerHTML = `
+                        <p>成功恢复 <strong>${result.restored}</strong> 名学员的积分。</p>
+                        ${result.notFound > 0 ? `<p class="text-yellow-600">有 ${result.notFound} 名学员未找到（可能已被删除）。</p>` : ''}
+                        <p class="mt-2">当前数据版本: ${result.version}</p>
+                    `;
+
+                    this.showNotification('success', '恢复成功', `已恢复 ${result.restored} 名学员的积分`);
+                } catch (err) {
+                    this.showNotification('error', '恢复失败', err.message);
+                }
             }
 
             // 显示添加学员模态框
